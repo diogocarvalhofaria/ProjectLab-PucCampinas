@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using ProjectLab.PucCampinas.Data;
-using ProjectLab.PucCampinas.Laboratories.Service;
-using ProjectLab.PucCampinas.Reservations.Service;
-using ProjectLab.PucCampinas.Users.Service;
+using ProjectLab.PucCampinas.Features.Laboratories.Service;
+using ProjectLab.PucCampinas.Features.Reservations.Service;
+using ProjectLab.PucCampinas.Features.Users.Service;
+using ProjectLab.PucCampinas.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
