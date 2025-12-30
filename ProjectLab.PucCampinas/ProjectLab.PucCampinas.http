@@ -1,0 +1,6 @@
+@ProjectLab.PucCampinas_HostAddress = http://localhost:5131
+
+GET {{ProjectLab.PucCampinas_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
