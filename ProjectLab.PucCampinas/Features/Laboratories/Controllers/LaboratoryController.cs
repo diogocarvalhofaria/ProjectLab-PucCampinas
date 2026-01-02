@@ -24,10 +24,9 @@ namespace ProjectLab.PucCampinas.Features.Laboratories.Controllers
         /// <returns>Uma lista paginada de laboratórios.</returns>
         [HttpGet("search")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PaginatedResult<Laboratory>>> SearchLaboratories([FromQuery] SearchLaboratoryInput filter)
+        public async Task<ActionResult<PaginatedResult<LaboratoryResponse>>> SearchLaboratories([FromQuery] SearchLaboratoryInput filter)
         {
-            var result = await _service.SearchLaboratories(filter);
-            return Ok(result);
+            return Ok(await _service.SearchLaboratories(filter));
         }
 
         /// <summary>
@@ -37,11 +36,9 @@ namespace ProjectLab.PucCampinas.Features.Laboratories.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Laboratory>> GetLaboratoriesById(Guid id)
+        public async Task<ActionResult<LaboratoryResponse>> GetLaboratoriesById(Guid id)
         {
             var laboratory = await _service.GetLaboratoriesById(id);
-            if (laboratory == null) return NotFound("Laboratório não encontrado.");
-
             return Ok(laboratory);
         }
 
@@ -50,10 +47,10 @@ namespace ProjectLab.PucCampinas.Features.Laboratories.Controllers
         /// </summary>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<ActionResult> CreateLaboratories(Laboratory laboratory)
+        public async Task<ActionResult<LaboratoryResponse>> CreateLaboratories(LaboratoryRequest request)
         {
-            await _service.CreateLaboratories(laboratory);
-            return CreatedAtAction(nameof(GetLaboratoriesById), new { id = laboratory.Id }, laboratory);
+            var response = await _service.CreateLaboratories(request);
+            return CreatedAtAction(nameof(GetLaboratoriesById), new { id = response.Id }, response);
         }
 
         /// <summary>
@@ -65,9 +62,9 @@ namespace ProjectLab.PucCampinas.Features.Laboratories.Controllers
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> UpdateLaboratories(Laboratory laboratory)
+        public async Task<ActionResult> UpdateLaboratories(Guid id, LaboratoryRequest request)
         {
-            await _service.UpdateLaboratories(laboratory);
+            await _service.UpdateLaboratories(id, request);
             return NoContent();
         }
 

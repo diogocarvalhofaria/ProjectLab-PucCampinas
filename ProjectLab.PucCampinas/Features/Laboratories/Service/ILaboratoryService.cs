@@ -6,11 +6,10 @@ namespace ProjectLab.PucCampinas.Features.Laboratories.Service
 {
     public interface ILaboratoryService
     {
-        Task<List<Laboratory>> GetLaboratories();
-        Task<Laboratory?> GetLaboratoriesById(Guid id);
-        Task CreateLaboratories(Laboratory laboratory);
+        Task<PaginatedResult<LaboratoryResponse>> SearchLaboratories(SearchLaboratoryInput filter);
+        Task<LaboratoryResponse?> GetLaboratoriesById(Guid id);
+        Task<LaboratoryResponse> CreateLaboratories(LaboratoryRequest request);
+        Task UpdateLaboratories(Guid id, LaboratoryRequest request);
         Task DeleteLaboratories(Guid id);
-        Task UpdateLaboratories(Laboratory laboratory);
-        Task<PaginatedResult<Laboratory>> SearchLaboratories(SearchLaboratoryInput filter);
     }
 }

@@ -6,10 +6,10 @@ namespace ProjectLab.PucCampinas.Features.Reservations.Service
 {
     public interface IReservationService
     {
-        Task<PaginatedResult<Reservation>> SearchReservation(SearchReservationInput filters);
-        Task<Reservation?> GetReservationById(Guid id);
-        Task CreateReservation(Reservation reservation);
-        Task UpdateReservation(Reservation reservation);
+        Task<PaginatedResult<ReservationResponse>> SearchReservation(SearchReservationInput filters);
+        Task<ReservationResponse?> GetReservationById(Guid id);
+        Task<ReservationResponse> CreateReservation(ReservationRequest request);
+        Task UpdateReservation(Guid id, ReservationRequest request);
         Task DeleteReservation(Guid id);
     }
 }

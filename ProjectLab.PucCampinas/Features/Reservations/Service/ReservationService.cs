@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProjectLab.PucCampinas.Common.Models;
+using ProjectLab.PucCampinas.Common.Services;
 using ProjectLab.PucCampinas.Features.Reservations.DTOs;
 using ProjectLab.PucCampinas.Features.Reservations.Model;
 using ProjectLab.PucCampinas.Infrastructure.Data;
@@ -7,87 +8,188 @@ using ProjectLab.PucCampinas.shared.Service;
 
 namespace ProjectLab.PucCampinas.Features.Reservations.Service
 {
-    public class ReservationService : IReservationService
+    public class ReservationService : BaseService, IReservationService
     {
 
         private readonly AppDbContext _context;
 
-        public ReservationService(AppDbContext context)
+        public ReservationService(AppDbContext context, ICustomErrorHandler errorHandler)
+             : base(errorHandler)
         {
             _context = context;
         }
 
-        public async Task CreateReservation(Reservation reservation)
+        public async Task<ReservationResponse> CreateReservation(ReservationRequest request)
         {
-            await ValidateConflict(reservation);
-            _context.Reservations.Add(reservation);
-            await _context.SaveChangesAsync();
+            try
+            {
+                var reservation = new Reservation
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = request.UserId,
+                    LaboratoryId = request.LaboratoryId,
+                    ReservationDate = request.ReservationDate,
+                    StartTime = request.StartTime,
+                    EndTime = request.EndTime
+                };
+
+                await ValidateConflict(reservation);
+
+                _context.Reservations.Add(reservation);
+                await _context.SaveChangesAsync();
+
+                var user = await _context.Users.FindAsync(reservation.UserId);
+                var lab = await _context.Laboratories.FindAsync(reservation.LaboratoryId);
+
+                return new ReservationResponse
+                {
+                    Id = reservation.Id,
+                    ReservationDate = reservation.ReservationDate,
+                    StartTime = reservation.StartTime,
+                    EndTime = reservation.EndTime,
+                    UserId = reservation.UserId,
+                    UserName = user?.Name ?? "Desconhecido",
+                    LaboratoryId = reservation.LaboratoryId,
+                    LaboratoryName = lab?.Name ?? "Desconhecido"
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao criar reserva: " + ex.Message);
+            }
         }
 
-        public async Task<Reservation?> GetReservationById(Guid id)
+        public async Task<ReservationResponse?> GetReservationById(Guid id)
         {
-            return await _context.Reservations
-                .Include(r => r.Laboratory)
-                .Include(r => r.User)
-                .FirstOrDefaultAsync(reservation => reservation.Id == id);
+            try
+            {
+                var r = await _context.Reservations
+                    .Include(x => x.Laboratory)
+                    .Include(x => x.User)
+                    .FirstOrDefaultAsync(x => x.Id == id);
+
+                if (r == null) return null;
+
+                return new ReservationResponse
+                {
+                    Id = r.Id,
+                    ReservationDate = r.ReservationDate,
+                    StartTime = r.StartTime,
+                    EndTime = r.EndTime,
+                    UserId = r.UserId,
+                    UserName = r.User?.Name ?? string.Empty,
+                    LaboratoryId = r.LaboratoryId,
+                    LaboratoryName = r.Laboratory?.Name ?? string.Empty
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao obter reserva: " + ex.Message);
+            }
         }
 
         public async Task DeleteReservation(Guid id)
         {
-            await _context.Reservations
-                .Where(reservation => reservation.Id == id)
-                .ExecuteDeleteAsync();
-        }
-
-        public async Task UpdateReservation(Reservation reservation)
-        {
-            await ValidateConflict(reservation);
-
-            reservation.UpdatedAt = DateTime.Now;
-            _context.Reservations.Update(reservation);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task<PaginatedResult<Reservation>> SearchReservation(SearchReservationInput filter)
-        {
-            var entity = _context.Reservations
-                .Include(r => r.Laboratory)
-                .Include(r => r.User)
-                .AsQueryable();
-
-            if(!string.IsNullOrWhiteSpace(filter.Keyword))
+            try
             {
-                entity = entity.Where(r => r.Laboratory.Name.Contains(filter.Keyword) || r.User.Name.Contains(filter.Keyword));
+                await _context.Reservations
+                    .Where(reservation => reservation.Id == id)
+                    .ExecuteDeleteAsync();
             }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao deletar reserva: " + ex.Message);
+            }
+        }
 
-            if(filter.StartDate.HasValue)
-                entity = entity.Where(r => r.ReservationDate >= filter.StartDate.Value);
+        public async Task UpdateReservation(Guid id, ReservationRequest request)
+        {
+            try
+            {
+                var reservation = await _context.Reservations.FirstOrDefaultAsync(r => r.Id == id);
+                if (reservation == null) throw new Exception("Reserva não encontrada");
 
-            if(filter.EndDate.HasValue)
-                entity = entity.Where(r => r.ReservationDate <= filter.EndDate.Value);
+                reservation.UserId = request.UserId;
+                reservation.LaboratoryId = request.LaboratoryId;
+                reservation.ReservationDate = request.ReservationDate;
+                reservation.StartTime = request.StartTime;
+                reservation.EndTime = request.EndTime;
+                reservation.UpdatedAt = DateTime.Now;
 
-            entity = filter.Order.ToUpper() == "ASC"
-                ? entity.OrderBy(r => r.ReservationDate)
-                : entity.OrderByDescending(r => r.ReservationDate);
+                await ValidateConflict(reservation);
 
-            return await entity.ToPaginatedResultAsync(filter.Page, filter.Size);
+                _context.Reservations.Update(reservation);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao atualizar reserva: " + ex.Message);
+            }
+        }
 
+        public async Task<PaginatedResult<ReservationResponse>> SearchReservation(SearchReservationInput filter)
+        {
+            try
+            {
+                var query = _context.Reservations.AsQueryable();
+
+                if (!string.IsNullOrWhiteSpace(filter.Keyword))
+                {
+                    query = query.Where(r => r.Laboratory.Name.Contains(filter.Keyword) ||
+                                             r.User.Name.Contains(filter.Keyword));
+                }
+
+                if (filter.StartDate.HasValue)
+                    query = query.Where(r => r.ReservationDate >= filter.StartDate.Value);
+
+                if (filter.EndDate.HasValue)
+                    query = query.Where(r => r.ReservationDate <= filter.EndDate.Value);
+
+                query = filter.Order.ToUpper() == "ASC"
+                    ? query.OrderBy(r => r.ReservationDate)
+                    : query.OrderByDescending(r => r.ReservationDate);
+
+                var responseQuery = query.Select(r => new ReservationResponse
+                {
+                    Id = r.Id,
+                    ReservationDate = r.ReservationDate,
+                    StartTime = r.StartTime,
+                    EndTime = r.EndTime,
+                    UserId = r.UserId,
+                    UserName = r.User.Name,
+                    LaboratoryId = r.LaboratoryId,
+                    LaboratoryName = r.Laboratory.Name
+                });
+
+                return await responseQuery.ToPaginatedResultAsync(filter.Page, filter.Size);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao buscar reservas: " + ex.Message);
+            }
         }
 
         private async Task ValidateConflict(Reservation reservation)
         {
-            var hasConflict = await _context.Reservations.AnyAsync(r =>
-                r.Id != reservation.Id && // Aqui está o segredo: ignora a si mesmo no Update
-                r.LaboratoryId == reservation.LaboratoryId &&
-                r.ReservationDate.Date == reservation.ReservationDate.Date &&
-                ((reservation.StartTime >= r.StartTime && reservation.StartTime < r.EndTime) ||
-                 (reservation.EndTime > r.StartTime && reservation.EndTime <= r.EndTime)));
-
-            if (hasConflict)
+            try
             {
-                throw new Exception("O Laboratório já está reservado para este horário!");
+                var hasConflict = await _context.Reservations.AnyAsync(r =>
+                    r.Id != reservation.Id &&
+                    r.LaboratoryId == reservation.LaboratoryId &&
+                    r.ReservationDate.Date == reservation.ReservationDate.Date &&
+                    ((reservation.StartTime >= r.StartTime && reservation.StartTime < r.EndTime) ||
+                     (reservation.EndTime > r.StartTime && reservation.EndTime <= r.EndTime)));
+
+                if (hasConflict)
+                {
+                    throw new Exception("O Laboratório já está reservado para este horário!");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao validar conflito de reserva: " + ex.Message);
             }
         }
-    }
 
+    }
 }

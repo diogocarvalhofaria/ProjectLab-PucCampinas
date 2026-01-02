@@ -6,10 +6,10 @@ namespace ProjectLab.PucCampinas.Features.Users.Service
 {
     public interface IUserService
     {
-        Task<PaginatedResult<User>> SearchUser(SearchUserInput filter);
-        Task<User?> GetUserById(Guid id);
-        Task CreateUser(User user);
-        Task UpdateUser(User user);
+        Task<PaginatedResult<UserResponse>> SearchUser(SearchUserInput filter);
+        Task<UserResponse?> GetUserById(Guid id);
+        Task<UserResponse> CreateUser(UserRequest request);
+        Task UpdateUser(Guid id, UserRequest request);
         Task DeleteUser(Guid id);
 
     }

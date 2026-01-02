@@ -23,7 +23,7 @@ namespace ProjectLab.PucCampinas.Features.Users.Controllers
         /// <param name="filter">Filtros por nome, email ou telefone.</param>
         [HttpGet("search")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PaginatedResult<User>>> SearchUser([FromQuery] SearchUserInput filter)
+        public async Task<ActionResult<PaginatedResult<UserResponse>>> SearchUser([FromQuery] SearchUserInput filter)
         {
             return Ok(await _service.SearchUser(filter));
         }
@@ -34,11 +34,12 @@ namespace ProjectLab.PucCampinas.Features.Users.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<User>> GetUserById(Guid id)
+        public async Task<ActionResult<UserResponse>> GetUserById(Guid id)
         {
-            var user = await _service.GetUserById(id);
-            if (user == null) return NotFound("Usuário não encontrado.");
-            return Ok(user);
+            var response = await _service.GetUserById(id);
+            if (response == null) return NotFound("Usuário não encontrado.");
+
+            return Ok(response);
         }
 
         /// <summary>
@@ -46,10 +47,10 @@ namespace ProjectLab.PucCampinas.Features.Users.Controllers
         /// </summary>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<ActionResult> CreateUser(User user)
+        public async Task<ActionResult<UserResponse>> CreateUser(UserRequest request)
         {
-            await _service.CreateUser(user);
-            return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user);
+            var response = await _service.CreateUser(request);
+            return CreatedAtAction(nameof(GetUserById), new { id = response.Id }, response);
         }
 
         /// <summary>
@@ -57,9 +58,9 @@ namespace ProjectLab.PucCampinas.Features.Users.Controllers
         /// </summary>
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> UpdateUser(User user)
+        public async Task<ActionResult> UpdateUser(Guid id, UserRequest request)
         {
-            await _service.UpdateUser(user);
+            await _service.UpdateUser(id, request);
             return NoContent();
         }
 

@@ -23,7 +23,7 @@ namespace ProjectLab.PucCampinas.Features.Reservations.Controllers
         /// <param name="filter">Filtros de busca (Keyword, StartDate, EndDate).</param>
         [HttpGet("search")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PaginatedResult<Reservation>>> SearchReservation([FromQuery] SearchReservationInput filter)
+        public async Task<ActionResult<PaginatedResult<ReservationResponse>>> SearchReservation([FromQuery] SearchReservationInput filter)
         {
             return Ok(await _service.SearchReservation(filter));
         }
@@ -34,10 +34,9 @@ namespace ProjectLab.PucCampinas.Features.Reservations.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Reservation>> GetReservationById(Guid id)
+        public async Task<ActionResult<ReservationResponse>> GetReservationById(Guid id)
         {
             var reservation = await _service.GetReservationById(id);
-            if (reservation == null) return NotFound("Reserva não encontrada.");
             return Ok(reservation);
         }
 
@@ -52,17 +51,10 @@ namespace ProjectLab.PucCampinas.Features.Reservations.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> CreateReservation(Reservation reservation)
+        public async Task<ActionResult<ReservationResponse>> CreateReservation(ReservationRequest request)
         {
-            try
-            {
-                await _service.CreateReservation(reservation);
-                return CreatedAtAction(nameof(GetReservationById), new { id = reservation.Id }, reservation);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            var response = await _service.CreateReservation(request);
+            return CreatedAtAction(nameof(GetReservationById), new { id = response.Id }, response);
         }
 
         /// <summary>
@@ -71,9 +63,9 @@ namespace ProjectLab.PucCampinas.Features.Reservations.Controllers
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> UpdateReservation(Reservation reservation)
+        public async Task<ActionResult> UpdateReservation(Guid id, ReservationRequest request)
         {
-            await _service.UpdateReservation(reservation);
+            await _service.UpdateReservation(id, request);
             return NoContent();
         }
 

@@ -16,7 +16,12 @@ namespace ProjectLab.PucCampinas.Features.Users.Model
         [Required]
         [Phone]
         public string PhoneNumber { get; set; }
-
+        [Required]
+        public string? Cep { get; set; }
+        public string? Logradouro { get; set; }
+        public string? Bairro { get; set; }
+        public string? Cidade { get; set; }
+        public string? Estado { get; set; }
         public ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
     }
 }

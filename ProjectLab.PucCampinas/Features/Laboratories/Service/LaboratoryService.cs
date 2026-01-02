@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProjectLab.PucCampinas.Common.Models;
+using ProjectLab.PucCampinas.Common.Services;
 using ProjectLab.PucCampinas.Features.Laboratories.DTOs;
 using ProjectLab.PucCampinas.Features.Laboratories.Model;
 using ProjectLab.PucCampinas.Infrastructure.Data;
@@ -7,55 +8,150 @@ using ProjectLab.PucCampinas.shared.Service;
 
 namespace ProjectLab.PucCampinas.Features.Laboratories.Service
 {
-    public class LaboratoryService : ILaboratoryService
+    public class LaboratoryService : BaseService, ILaboratoryService
     {
         private readonly AppDbContext _context;
 
-        public LaboratoryService(AppDbContext context)
+        public LaboratoryService(AppDbContext context, ICustomErrorHandler errorHandler)
+             : base(errorHandler)
         {
             _context = context;
         }
 
         public async Task<List<Laboratory>> GetLaboratories()
-           => await _context.Laboratories.ToListAsync();
+        {
+            try
+            {
+                return await _context.Laboratories.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                OnError(ex, 500);
+                throw;
+            }
+        }
 
-        public async Task<Laboratory?> GetLaboratoriesById(Guid id)
-           => await _context.Laboratories.FindAsync(id);
+        public async Task<LaboratoryResponse?> GetLaboratoriesById(Guid id)
+        {
+            try
+            {
+                var lab = await _context.Laboratories.FindAsync(id);
+                if (lab == null) return null;
+
+                return new LaboratoryResponse
+                {
+                    Id = lab.Id,
+                    Name = lab.Name,
+                    Building = lab.Building,
+                    Capacity = lab.Capacity
+                };
+            }
+            catch (Exception ex)
+            {
+                OnError(ex, 500);
+                throw;
+            }
+        }
 
 
-        public async Task CreateLaboratories(Laboratory laboratory)
-        { 
-             _context.Laboratories.Add(laboratory);
-            await _context.SaveChangesAsync();
+        public async Task<LaboratoryResponse> CreateLaboratories(LaboratoryRequest request)
+        {
+            try
+            {
+                var lab = new Laboratory
+                {
+                    Id = Guid.NewGuid(),
+                    Name = request.Name,
+                    Building = request.Building,
+                    Capacity = request.Capacity
+                };
+
+                _context.Laboratories.Add(lab);
+                await _context.SaveChangesAsync();
+
+                return new LaboratoryResponse
+                {
+                    Id = lab.Id,
+                    Name = lab.Name,
+                    Building = lab.Building,
+                    Capacity = lab.Capacity
+                };
+            }
+            catch (Exception ex)
+            {
+                OnError(ex, 500);
+                throw;
+            }
         }
 
         public async Task DeleteLaboratories(Guid id)
         {
-            await _context.Laboratories
-                .Where(lab => lab.Id == id)
-                .ExecuteDeleteAsync();
+            try
+            {
+                await _context.Laboratories
+                    .Where(lab => lab.Id == id)
+                    .ExecuteDeleteAsync();
+            }
+            catch (Exception ex)
+            {
+                OnError(ex, 500);
+                throw;
+            }
         }
 
-        public async Task UpdateLaboratories(Laboratory laboratory)
+        public async Task UpdateLaboratories(Guid id, LaboratoryRequest request)
         {
+            try
+            {
+                var lab = await _context.Laboratories.FirstOrDefaultAsync(l => l.Id == id);
 
-            _context.Laboratories.Update(laboratory);
-            await _context.SaveChangesAsync();
+                if (lab == null) throw new Exception("Laboratório não encontrado");
+
+                lab.Name = request.Name;
+                lab.Building = request.Building;
+                lab.Capacity = request.Capacity;
+
+                _context.Laboratories.Update(lab);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                OnError(ex, 500);
+                throw;
+            }
         }
 
-        public async Task<PaginatedResult<Laboratory>> SearchLaboratories(SearchLaboratoryInput filter)
+        public async Task<PaginatedResult<LaboratoryResponse>> SearchLaboratories(SearchLaboratoryInput filter)
         {
-            var entity = _context.Laboratories.AsQueryable();
+            try
+            {
+                var query = _context.Laboratories.AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(filter.Keyword))
-                entity = entity.Where(x => x.Name.Contains(filter.Keyword));
+                if (!string.IsNullOrWhiteSpace(filter.Keyword))
+                {
+                    query = query.Where(x => x.Name.Contains(filter.Keyword) ||
+                                             x.Building.Contains(filter.Keyword));
+                }
 
-            entity = filter.Order.ToUpper() == "ASC"
-                ? entity.OrderBy(x => x.Name)
-                : entity.OrderByDescending(x => x.Name);
+                query = filter.Order.ToUpper() == "ASC"
+                    ? query.OrderBy(x => x.Name)
+                    : query.OrderByDescending(x => x.Name);
 
-            return await entity.ToPaginatedResultAsync(filter.Page, filter.Size);
+                var responseQuery = query.Select(lab => new LaboratoryResponse
+                {
+                    Id = lab.Id,
+                    Name = lab.Name,
+                    Building = lab.Building,
+                    Capacity = lab.Capacity
+                });
 
+                return await responseQuery.ToPaginatedResultAsync(filter.Page, filter.Size);
+            }
+            catch (Exception ex)
+            {
+                OnError(ex, 500);
+                throw;
+            }
         }
     }
 }
