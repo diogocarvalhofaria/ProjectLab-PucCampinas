@@ -6,7 +6,7 @@ services:
       - "8000:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=db;Database=projectlab;User=root;Password=root;
+      - ConnectionStrings__DefaultConnection=Server=db;Database=Laboratory;Uid=root;Pwd=mestre;
     depends_on:
       - db
     networks:
@@ -16,8 +16,8 @@ services:
     image: mysql:8.0
     container_name: projectlab-db
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: projectlab
+      - MYSQL_ROOT_PASSWORD=mestre
+      - MYSQL_DATABASE=Laboratory
     ports:
       - "3307:3306"
     volumes:

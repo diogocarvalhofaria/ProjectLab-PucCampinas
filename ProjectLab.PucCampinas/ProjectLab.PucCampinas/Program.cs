@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using ProjectLab.PucCampinas.Common.Services;
@@ -9,7 +9,6 @@ using ProjectLab.PucCampinas.Features.Users.Service.shared;
 using ProjectLab.PucCampinas.Infrastructure.Data;
 using ProjectLab.PucCampinas.Infrastructure.Middleware;
 using Serilog;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,13 +37,24 @@ builder.Host.UseSerilog();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "ProjectLab API",
         Version = "v1",
-        Description = "API de Reservas de Laborat�rios da PUC-Campinas"
+        Description = "API de Reservas de Laboratórios da PUC-Campinas"
     });
 
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -59,7 +69,7 @@ builder.Services.AddSwaggerGen(options =>
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 43))));
 
 builder.Services.AddSingleton<ILoggerService, LoggerService>(); 
 builder.Services.AddScoped<ICustomErrorHandler, CustomErrorHandler>(); 
@@ -88,7 +98,32 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowAngular");
 app.UseAuthorization();
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<AppDbContext>();
+    int retries = 5;
+
+    while (retries > 0)
+    {
+        try
+        {
+            Console.WriteLine("--- Tentando sincronizar tabelas no MySQL... ---");
+            await context.Database.MigrateAsync(); Console.WriteLine("--- ✅ Tabelas verificadas/criadas com sucesso! ---");
+            break;
+        }
+        catch (Exception ex)
+        {
+            retries--;
+            Console.WriteLine($"--- ⚠️ Banco ainda não pronto. Tentativas restantes: {retries} ---");
+            if (retries == 0) Console.WriteLine($"--- ❌ Erro final: {ex.Message} ---");
+            await Task.Delay(5000);
+        }
+    }
+}
 
 app.Run();
