@@ -1,0 +1,11 @@
+<div class="overlay" (click)="onCancel()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <h3 class="modal-title">{{ title }}</h3>
+    <p class="modal-message">{{ message }}</p>
+    
+    <div class="modal-actions">
+      <button class="btn btn-cancel" (click)="onCancel()">Cancelar</button>
+      <button class="btn btn-confirm" (click)="onConfirm()">Sim, Excluir</button>
+    </div>
+  </div>
+</div>

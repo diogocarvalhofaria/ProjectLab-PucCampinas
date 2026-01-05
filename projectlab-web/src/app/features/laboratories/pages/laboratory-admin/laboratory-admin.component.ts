@@ -2,35 +2,39 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
+
 import {
   LaboratoryService,
-  SearchParams,
+  SearchParams, // <--- Importante
 } from '../../services/laboratory.service';
 import { LaboratoryResponse } from '../../models/laboratory.model';
 import { LabCardComponent } from '../../../../shared/components/lab-card/lab-card.component';
+import { LaboratoryFormComponent } from '../../components/laboratory-form/laboratory-form.component';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { ModalWrapperComponent } from '../../../../shared/components/modal-wrapper/modal-wrapper.component';
-import { ReservationFormComponent } from '../../../reservations/components/reservation-form.component';
 
 @Component({
-  selector: 'app-laboratory-list',
+  selector: 'app-laboratory-admin',
   standalone: true,
   imports: [
     CommonModule,
-    LabCardComponent,
     RouterModule,
+    LabCardComponent,
+    LaboratoryFormComponent,
+    ConfirmationModalComponent,
     ModalWrapperComponent,
-    ReservationFormComponent,
   ],
-  templateUrl: './laboratory-list.component.html',
-  styleUrl: './laboratory-list.component.scss',
+  templateUrl: './laboratory-admin.component.html',
+  styleUrl: './laboratory-admin.component.scss',
 })
-export class LaboratoryListComponent implements OnInit {
+export class LaboratoryAdminComponent implements OnInit {
   laboratories: LaboratoryResponse[] = [];
-  loading = true;
-  errorMessage = '';
+  loading = false;
 
-  showReservationModal = false;
-  selectedLab: any = null;
+  showForm = false;
+  selectedLab: LaboratoryResponse | null = null;
+  showDeleteModal = false;
+  idToDelete: string | null = null;
 
   currentPage = 1;
   totalPages = 1;
@@ -40,7 +44,7 @@ export class LaboratoryListComponent implements OnInit {
   keyword = '';
   selectedBuilding = '';
 
-  constructor(private readonly laboratoryService: LaboratoryService) {}
+  constructor(private laboratoryService: LaboratoryService) {}
 
   ngOnInit(): void {
     this.fetchLaboratories();
@@ -50,10 +54,10 @@ export class LaboratoryListComponent implements OnInit {
     this.loading = true;
 
     const params: SearchParams = {
-      keyword: this.keyword,
-      building: this.selectedBuilding,
       page: this.currentPage,
       size: 9,
+      keyword: this.keyword,
+      building: this.selectedBuilding,
     };
 
     this.laboratoryService.findAll(params).subscribe({
@@ -68,8 +72,7 @@ export class LaboratoryListComponent implements OnInit {
         this.loading = false;
       },
       error: (err: HttpErrorResponse) => {
-        console.error(err);
-        this.errorMessage = 'Erro ao carregar laboratórios.';
+        console.error('Erro ao buscar laboratórios', err);
         this.loading = false;
       },
     });
@@ -103,17 +106,50 @@ export class LaboratoryListComponent implements OnInit {
     }
   }
 
-  openReservation(lab: any) {
-    this.selectedLab = lab;
-    this.showReservationModal = true;
+  openNewForm() {
+    this.selectedLab = null;
+    this.showForm = true;
   }
 
-  closeReservation() {
-    this.showReservationModal = false;
+  openEditForm(lab: LaboratoryResponse) {
+    this.selectedLab = lab;
+    this.showForm = true;
+  }
+
+  closeForm() {
+    this.showForm = false;
     this.selectedLab = null;
   }
 
-  onReservationSaved() {
-    this.closeReservation();
+  toggleForm() {
+    this.showForm = !this.showForm;
+  }
+
+  onLabSaved() {
+    this.showForm = false;
+    this.fetchLaboratories();
+  }
+
+  openDeleteModal(id: string) {
+    this.idToDelete = id;
+    this.showDeleteModal = true;
+  }
+
+  confirmDelete() {
+    if (this.idToDelete) {
+      this.laboratoryService.delete(this.idToDelete).subscribe({
+        next: () => {
+          this.fetchLaboratories(); // A lista atualiza mantendo filtros atuais
+          this.closeModal();
+        },
+        error: (err: HttpErrorResponse) =>
+          console.error('Erro ao excluir', err),
+      });
+    }
+  }
+
+  closeModal() {
+    this.showDeleteModal = false;
+    this.idToDelete = null;
   }
 }

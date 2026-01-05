@@ -60,7 +60,7 @@ namespace ProjectLab.PucCampinas.Features.Reservations.Controllers
         /// <summary>
         /// Atualiza uma reserva existente.
         /// </summary>
-        [HttpPut]
+        [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> UpdateReservation(Guid id, ReservationRequest request)

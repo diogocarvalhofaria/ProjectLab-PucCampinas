@@ -59,7 +59,7 @@ namespace ProjectLab.PucCampinas.Features.Laboratories.Controllers
         /// <param name="laboratory">Objeto do laboratório com os dados atualizados.</param>
         /// <response code="204">Laboratório atualizado com sucesso.</response>
         /// <response code="400">Dados inválidos enviados na requisição.</response>
-        [HttpPut]
+        [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> UpdateLaboratories(Guid id, LaboratoryRequest request)

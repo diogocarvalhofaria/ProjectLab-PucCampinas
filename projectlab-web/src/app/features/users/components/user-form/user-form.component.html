@@ -1,0 +1,115 @@
+<div class="form-container">
+  <h2>{{ userData ? "Editar Usuário" : "Novo Usuário" }}</h2>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <h4 class="section-title">Dados Pessoais</h4>
+
+    <div class="input-group">
+      <label class="label">Nome Completo</label>
+      <input
+        formControlName="name"
+        placeholder="Ex: João da Silva"
+        class="input-field"
+      />
+      <small
+        *ngIf="form.get('name')?.invalid && form.get('name')?.touched"
+        class="error-msg"
+      >
+        Nome é obrigatório.
+      </small>
+    </div>
+
+    <div class="grid-2-col">
+      <div>
+        <label class="label">E-mail</label>
+        <input
+          formControlName="email"
+          type="email"
+          placeholder="joao@email.com"
+          class="input-field"
+        />
+        <small
+          *ngIf="form.get('email')?.invalid && form.get('email')?.touched"
+          class="error-msg"
+        >
+          E-mail inválido.
+        </small>
+      </div>
+
+      <div>
+        <label class="label">Função (Role)</label>
+        <select formControlName="role" class="input-field bg-white">
+          <option value="Student">Aluno</option>
+          <option value="Professor">Professor</option>
+          <option value="Admin">Administrador</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="input-group" style="margin-bottom: 20px">
+      <label class="label">Telefone / Celular</label>
+      <input
+        formControlName="phoneNumber"
+        placeholder="(11) 99999-9999"
+        class="input-field"
+      />
+    </div>
+
+    <h4 class="section-title mt-25">Endereço</h4>
+
+    <div class="grid-address">
+      <div>
+        <label class="label">CEP</label>
+        <input
+          formControlName="cep"
+          (blur)="buscarCep()"
+          placeholder="00000-000"
+          class="input-field"
+          maxlength="9"
+        />
+      </div>
+      <div>
+        <label class="label">Logradouro (Rua/Av)</label>
+        <input
+          formControlName="logradouro"
+          placeholder="Av. Brasil"
+          class="input-field"
+        />
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label class="label">Bairro</label>
+      <input
+        formControlName="bairro"
+        placeholder="Centro"
+        class="input-field"
+      />
+    </div>
+
+    <div class="grid-city-state">
+      <div>
+        <label class="label">Cidade</label>
+        <input
+          formControlName="cidade"
+          placeholder="Campinas"
+          class="input-field"
+        />
+      </div>
+      <div>
+        <label class="label">UF</label>
+        <input
+          formControlName="estado"
+          placeholder="SP"
+          class="input-field"
+          maxlength="2"
+          style="text-transform: uppercase"
+        />
+      </div>
+    </div>
+
+    <button type="submit" [disabled]="form.invalid" class="btn-submit">
+      {{ userData ? "Salvar Alterações" : "Cadastrar Usuário" }}
+    </button>
+  </form>
+</div>

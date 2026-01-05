@@ -3,6 +3,7 @@ using ProjectLab.PucCampinas.Common.Models;
 using ProjectLab.PucCampinas.Features.Users.DTOs;
 using ProjectLab.PucCampinas.Features.Users.Model;
 using ProjectLab.PucCampinas.Features.Users.Service;
+using ProjectLab.PucCampinas.Features.Users.Service.shared;
 
 namespace ProjectLab.PucCampinas.Features.Users.Controllers
 {
@@ -11,10 +12,12 @@ namespace ProjectLab.PucCampinas.Features.Users.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _service;
+        private readonly IViaCepService _viaCepService;
 
-        public UserController(IUserService service)
+        public UserController(IUserService service, IViaCepService viaCepService)
         {
             _service = service;
+            _viaCepService = viaCepService;
         }
 
         /// <summary>
@@ -56,7 +59,7 @@ namespace ProjectLab.PucCampinas.Features.Users.Controllers
         /// <summary>
         /// Atualiza os dados cadastrais do usuário.
         /// </summary>
-        [HttpPut]
+        [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> UpdateUser(Guid id, UserRequest request)
         {
@@ -73,6 +76,22 @@ namespace ProjectLab.PucCampinas.Features.Users.Controllers
         {
             await _service.DeleteUser(id);
             return NoContent();
+        }
+
+        [HttpGet("consult-cep/{cep}")]
+        public async Task<IActionResult> GetAddressByCep(string cep)
+        {
+            var cepLimpo = cep.Replace("-", "").Trim();
+
+            if (cepLimpo.Length != 8)
+                return BadRequest("CEP inválido.");
+
+            var address = await _viaCepService.GetAddressByCep(cepLimpo);
+
+            if (address == null)
+                return NotFound("CEP não encontrado.");
+
+            return Ok(address);
         }
     }
 }

@@ -14,10 +14,11 @@ namespace ProjectLab.PucCampinas.Features.Users.Service
         private readonly AppDbContext _context;
         private readonly IViaCepService _viaCepService;
 
-        public UserService(AppDbContext context, ICustomErrorHandler errorHandler)
+        public UserService(AppDbContext context, ICustomErrorHandler errorHandler, IViaCepService viaCepService)
               : base(errorHandler)
         {
             _context = context;
+            _viaCepService = viaCepService;
         }
         public async Task<UserResponse> CreateUser(UserRequest request)
         {
