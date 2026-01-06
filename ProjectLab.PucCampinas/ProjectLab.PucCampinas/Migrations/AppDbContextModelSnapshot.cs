@@ -90,6 +90,7 @@ namespace ProjectLab.PucCampinas.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("Cep")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("Cidade")
@@ -109,15 +110,25 @@ namespace ProjectLab.PucCampinas.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<string>("Ra")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Ra")
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });

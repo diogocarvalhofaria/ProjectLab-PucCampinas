@@ -1,0 +1,76 @@
+<div
+  style="
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  "
+>
+  <div
+    style="
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 10px;
+    "
+  >
+    <h3 style="margin: 0; color: #333; font-size: 18px">{{ user.name }}</h3>
+    <span
+      [style.background]="getRoleColor(user.role)"
+      style="
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+      "
+    >
+      {{ user.role }}
+    </span>
+  </div>
+
+  <div style="flex: 1; color: #666; font-size: 14px">
+    <p style="margin: 5px 0">📧 {{ user.email }}</p>
+    <p style="margin: 5px 0">📱 {{ user.phoneNumber }}</p>
+    <p style="margin: 5px 0; font-size: 12px">
+      {{ user.cidade }} - {{ user.estado }}
+    </p>
+  </div>
+
+  <div *ngIf="isAdmin" style="display: flex; gap: 10px; margin-top: 20px">
+    <button
+      (click)="onEdit()"
+      style="
+        flex: 1;
+        background: #f39c12;
+        color: white;
+        border: none;
+        padding: 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+      "
+    >
+      Editar
+    </button>
+    <button
+      (click)="onDelete()"
+      style="
+        flex: 1;
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+      "
+    >
+      Excluir
+    </button>
+  </div>
+</div>

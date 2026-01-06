@@ -1,39 +1,123 @@
-<div *ngIf="labForm" style="max-width: 500px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-  <h2 style="color: #004a80;">Novo Laboratório</h2>
-  
-  <form [formGroup]="labForm" (ngSubmit)="onSubmit()">
-    <div style="margin-bottom: 15px;">
-      <label style="display: block; margin-bottom: 5px; font-weight: bold;">Nome do Laboratório:</label>
-      <input formControlName="name" placeholder="Ex: Lab de Informática 01"
-             style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-      
-      <small *ngIf="labForm.get('name')?.invalid && labForm.get('name')?.touched" style="color: red; display: block; margin-top: 5px;">
-        Nome obrigatório (mínimo 3 caracteres).
+<div style="padding: 10px">
+  <h2 style="color: #004a80; margin-top: 0">
+    {{ labData ? "Editar Laboratório" : "Novo Laboratório" }}
+  </h2>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div style="margin-bottom: 20px">
+      <label
+        style="
+          display: block;
+          margin-bottom: 8px;
+          font-weight: 600;
+          color: #333;
+        "
+      >
+        Nome do Laboratório:
+      </label>
+      <input
+        formControlName="name"
+        placeholder="Ex: Lab de Informática 01"
+        style="
+          width: 100%;
+          padding: 10px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          box-sizing: border-box;
+          font-size: 14px;
+        "
+      />
+
+      <small
+        *ngIf="form.get('name')?.invalid && form.get('name')?.touched"
+        style="color: #dc3545; display: block; margin-top: 5px; font-size: 12px"
+      >
+        Nome é obrigatório (mínimo 3 caracteres).
       </small>
     </div>
 
-    <div style="margin-bottom: 15px;">
-      <label style="display: block; margin-bottom: 5px; font-weight: bold;">Prédio:</label>
-      <input formControlName="building" placeholder="Ex: Prédio H1"
-             style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-      <small *ngIf="labForm.get('building')?.invalid && labForm.get('building')?.touched" style="color: red; display: block; margin-top: 5px;">
+    <div style="margin-bottom: 20px">
+      <label
+        style="
+          display: block;
+          margin-bottom: 8px;
+          font-weight: 600;
+          color: #333;
+        "
+      >
+        Prédio:
+      </label>
+      <input
+        formControlName="building"
+        placeholder="Ex: Prédio H1"
+        style="
+          width: 100%;
+          padding: 10px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          box-sizing: border-box;
+          font-size: 14px;
+        "
+      />
+
+      <small
+        *ngIf="form.get('building')?.invalid && form.get('building')?.touched"
+        style="color: #dc3545; display: block; margin-top: 5px; font-size: 12px"
+      >
         O prédio é obrigatório.
       </small>
     </div>
 
-    <div style="margin-bottom: 15px;">
-      <label style="display: block; margin-bottom: 5px; font-weight: bold;">Capacidade (pessoas):</label>
-      <input type="number" formControlName="capacity" 
-             style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-      <small *ngIf="labForm.get('capacity')?.invalid && labForm.get('capacity')?.touched" style="color: red; display: block; margin-top: 5px;">
+    <div style="margin-bottom: 25px">
+      <label
+        style="
+          display: block;
+          margin-bottom: 8px;
+          font-weight: 600;
+          color: #333;
+        "
+      >
+        Capacidade (pessoas):
+      </label>
+      <input
+        type="number"
+        formControlName="capacity"
+        style="
+          width: 100%;
+          padding: 10px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          box-sizing: border-box;
+          font-size: 14px;
+        "
+      />
+
+      <small
+        *ngIf="form.get('capacity')?.invalid && form.get('capacity')?.touched"
+        style="color: #dc3545; display: block; margin-top: 5px; font-size: 12px"
+      >
         A capacidade deve ser no mínimo 1.
       </small>
     </div>
 
-    <button type="submit" [disabled]="labForm.invalid" 
-            [style.opacity]="labForm.invalid ? '0.5' : '1'"
-            style="background: #004a80; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; transition: 0.3s;">
-      Salvar Laboratório
+    <button
+      type="submit"
+      [disabled]="form.invalid"
+      [style.opacity]="form.invalid ? '0.6' : '1'"
+      [style.cursor]="form.invalid ? 'not-allowed' : 'pointer'"
+      style="
+        background: #004a80;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 4px;
+        width: 100%;
+        font-weight: bold;
+        font-size: 16px;
+        transition: 0.3s;
+      "
+    >
+      {{ labData ? "Salvar Alterações" : "Criar Laboratório" }}
     </button>
   </form>
 </div>

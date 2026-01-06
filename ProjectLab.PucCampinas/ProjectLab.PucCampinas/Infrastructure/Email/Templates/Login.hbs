@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .header {
+            background-color: #004a80;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            background-color: #27ae60;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Bem-vindo ao ProjectLab!</h2>
+        </div>
+        <div class="content">
+            <p>Olá, <strong>{{name}}</strong>!</p>
+            <p>Seu cadastro foi realizado com sucesso pela secretaria.</p>
+            <p>Seu Registro Acadêmico (RA) é: <strong>{{ra}}</strong></p>
+            <p>Para acessar o sistema e realizar reservas, você precisa definir sua senha clicando no botão abaixo:</p>
+
+            <center>
+                <a href="{{link}}" class="button">Definir Minha Senha</a>
+            </center>
+
+            <p style="margin-top: 30px;">Ou copie este link no seu navegador:</p>
+            <p><small>{{link}}</small></p>
+        </div>
+        <div class="footer">
+            <p>PUC-Campinas - Sistema de Reserva de Laboratórios</p>
+        </div>
+    </div>
+</body>
+</html>

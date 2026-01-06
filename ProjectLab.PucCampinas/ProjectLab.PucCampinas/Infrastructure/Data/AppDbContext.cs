@@ -26,6 +26,10 @@ namespace ProjectLab.PucCampinas.Infrastructure.Data
                 .WithMany(u => u.Reservations) 
                 .HasForeignKey(r => r.UserId);
 
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Ra)
+                .IsUnique();
+
         }
     }
 }

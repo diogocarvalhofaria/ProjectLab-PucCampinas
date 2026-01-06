@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProjectLab.PucCampinas.Common.Models;
 using ProjectLab.PucCampinas.Common.Services;
+using ProjectLab.PucCampinas.Features.Auth.Service;
 using ProjectLab.PucCampinas.Features.Users.DTOs;
 using ProjectLab.PucCampinas.Features.Users.Model;
 using ProjectLab.PucCampinas.Features.Users.Service.shared;
 using ProjectLab.PucCampinas.Infrastructure.Data;
+using ProjectLab.PucCampinas.Infrastructure.Email.Service;
 using ProjectLab.PucCampinas.shared.Service;
 
 namespace ProjectLab.PucCampinas.Features.Users.Service
@@ -13,13 +15,16 @@ namespace ProjectLab.PucCampinas.Features.Users.Service
     {
         private readonly AppDbContext _context;
         private readonly IViaCepService _viaCepService;
+        private readonly AuthService _authService;
+        private readonly IEmailService _emailService;
 
-        public UserService(AppDbContext context, ICustomErrorHandler errorHandler)
+        public UserService(AppDbContext context, ICustomErrorHandler errorHandler, IViaCepService viaCepService)
               : base(errorHandler)
         {
             _context = context;
+            _viaCepService = viaCepService;
         }
-        public async Task<UserResponse> CreateUser(UserRequest request)
+        public async Task<UserResponse> CreateUser(UserRequest request, AuthService authService)
         {
             try
             {
@@ -27,6 +32,7 @@ namespace ProjectLab.PucCampinas.Features.Users.Service
                 {
                     Name = request.Name,
                     Email = request.Email,
+                    Ra = request.Ra,
                     Role = request.Role,
                     PhoneNumber = request.PhoneNumber,
                     Cep = request.Cep
@@ -46,6 +52,18 @@ namespace ProjectLab.PucCampinas.Features.Users.Service
 
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
+
+                var token = _authService.GenerateSetupToken(user);
+                var link = $"http://localhost:4200/setup-password?token={token}";
+
+                var emailData = new
+                {
+                    name = user.Name,
+                    ra = user.Ra, 
+                    link = link
+                };
+
+                await _emailService.SendTemplateEmail(user.Email, "Defina sua Senha", "Login", emailData);
 
                 return new UserResponse
                 {

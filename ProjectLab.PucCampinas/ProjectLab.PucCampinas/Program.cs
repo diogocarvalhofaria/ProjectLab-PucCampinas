@@ -1,5 +1,6 @@
-﻿using System.Reflection;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ProjectLab.PucCampinas.Common.Services;
 using ProjectLab.PucCampinas.Features.Laboratories.Service;
@@ -7,29 +8,17 @@ using ProjectLab.PucCampinas.Features.Reservations.Service;
 using ProjectLab.PucCampinas.Features.Users.Service;
 using ProjectLab.PucCampinas.Features.Users.Service.shared;
 using ProjectLab.PucCampinas.Infrastructure.Data;
+using ProjectLab.PucCampinas.Infrastructure.Email.Service;
 using ProjectLab.PucCampinas.Infrastructure.Middleware;
 using Serilog;
+using System.Reflection;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var loggerConfig = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .WriteTo.Console();
-
-if (builder.Environment.IsProduction())
-{
-    var datadogKey = builder.Configuration["Datadog:ApiKey"];
-
-    if (!string.IsNullOrEmpty(datadogKey))
-    {
-        loggerConfig.WriteTo.DatadogLogs(
-            apiKey: datadogKey,
-            source: "dotnet",
-            service: "ProjectLabAPI",
-            host: "http-intake.logs.datadoghq.com"
-        );
-    }
-}
 
 Log.Logger = loggerConfig.CreateLogger();
 builder.Host.UseSerilog();
@@ -47,7 +36,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -57,9 +45,35 @@ builder.Services.AddSwaggerGen(options =>
         Description = "API de Reservas de Laboratórios da PUC-Campinas"
     });
 
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "Insira o token JWT desta maneira: Bearer {seu token}",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement()
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = ParameterLocation.Header,
+            },
+            new List<string>()
+        }
+    });
+
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-
     if (File.Exists(xmlPath))
     {
         options.IncludeXmlComments(xmlPath);
@@ -67,21 +81,41 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 43))));
 
-builder.Services.AddSingleton<ILoggerService, LoggerService>(); 
-builder.Services.AddScoped<ICustomErrorHandler, CustomErrorHandler>(); 
-
+builder.Services.AddSingleton<ILoggerService, LoggerService>();
+builder.Services.AddScoped<ICustomErrorHandler, CustomErrorHandler>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
+builder.Services.AddScoped<ProjectLab.PucCampinas.Features.Auth.Service.AuthService>();
 builder.Services.AddScoped<ILaboratoryService, LaboratoryService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
-
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddHttpClient<IViaCepService, ViaCepService>();
+
+var jwtKey = builder.Configuration["JwtSettings:SecretKey"]; 
+var key = Encoding.ASCII.GetBytes(jwtKey);
+
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(x =>
+{
+    x.RequireHttpsMetadata = false;
+    x.SaveToken = true;
+    x.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = false,
+        ValidateAudience = false
+    };
+});
 
 var app = builder.Build();
 
@@ -99,7 +133,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAngular");
+
+app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
@@ -113,7 +150,8 @@ using (var scope = app.Services.CreateScope())
         try
         {
             Console.WriteLine("--- Tentando sincronizar tabelas no MySQL... ---");
-            await context.Database.MigrateAsync(); Console.WriteLine("--- ✅ Tabelas verificadas/criadas com sucesso! ---");
+            await context.Database.MigrateAsync();
+            Console.WriteLine("--- ✅ Tabelas verificadas/criadas com sucesso! ---");
             break;
         }
         catch (Exception ex)

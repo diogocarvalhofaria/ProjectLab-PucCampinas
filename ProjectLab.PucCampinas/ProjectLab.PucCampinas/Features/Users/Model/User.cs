@@ -14,6 +14,9 @@ namespace ProjectLab.PucCampinas.Features.Users.Model
         [Required]
         public string Role { get; set; } = "Professor";
         [Required]
+        public string Ra { get; set; } = string.Empty;
+        public string? PasswordHash { get; set; }
+        [Required]
         [Phone]
         public string PhoneNumber { get; set; }
         [Required]

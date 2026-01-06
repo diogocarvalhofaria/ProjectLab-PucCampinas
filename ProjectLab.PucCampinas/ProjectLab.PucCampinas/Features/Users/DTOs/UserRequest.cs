@@ -4,6 +4,7 @@
     {
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
+        public string Ra { get; set; }
         public string Role { get; set; } = "Professor";
         public string PhoneNumber { get; set; } = string.Empty;
         public string? Cep { get; set; }

@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProjectLab.PucCampinas.Common.Models;
+using ProjectLab.PucCampinas.Features.Auth.Service;
 using ProjectLab.PucCampinas.Features.Users.DTOs;
 using ProjectLab.PucCampinas.Features.Users.Model;
 using ProjectLab.PucCampinas.Features.Users.Service;
+using ProjectLab.PucCampinas.Features.Users.Service.shared;
 
 namespace ProjectLab.PucCampinas.Features.Users.Controllers
 {
@@ -11,10 +13,12 @@ namespace ProjectLab.PucCampinas.Features.Users.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _service;
+        private readonly IViaCepService _viaCepService;
 
-        public UserController(IUserService service)
+        public UserController(IUserService service, IViaCepService viaCepService)
         {
             _service = service;
+            _viaCepService = viaCepService;
         }
 
         /// <summary>
@@ -47,16 +51,16 @@ namespace ProjectLab.PucCampinas.Features.Users.Controllers
         /// </summary>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<ActionResult<UserResponse>> CreateUser(UserRequest request)
+        public async Task<ActionResult<UserResponse>> CreateUser(UserRequest request, AuthService authService)
         {
-            var response = await _service.CreateUser(request);
+            var response = await _service.CreateUser(request, authService);
             return CreatedAtAction(nameof(GetUserById), new { id = response.Id }, response);
         }
 
         /// <summary>
         /// Atualiza os dados cadastrais do usuário.
         /// </summary>
-        [HttpPut]
+        [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> UpdateUser(Guid id, UserRequest request)
         {
@@ -73,6 +77,22 @@ namespace ProjectLab.PucCampinas.Features.Users.Controllers
         {
             await _service.DeleteUser(id);
             return NoContent();
+        }
+
+        [HttpGet("consult-cep/{cep}")]
+        public async Task<IActionResult> GetAddressByCep(string cep)
+        {
+            var cepLimpo = cep.Replace("-", "").Trim();
+
+            if (cepLimpo.Length != 8)
+                return BadRequest("CEP inválido.");
+
+            var address = await _viaCepService.GetAddressByCep(cepLimpo);
+
+            if (address == null)
+                return NotFound("CEP não encontrado.");
+
+            return Ok(address);
         }
     }
 }
