@@ -1,0 +1,209 @@
+$puc-blue: #003B71;
+$puc-gold: #F2C94C;
+$bg-gray: #f4f6f8;
+$sidebar-width: 260px;
+
+.app-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.sidebar {
+  width: $sidebar-width;
+  background-color: $puc-blue;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+  z-index: 100;
+
+  .sidebar-header {
+    height: 70px;
+    display: flex;
+    align-items: center;
+    padding: 0 25px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: white;
+      color: $puc-blue;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      margin-right: 12px;
+    }
+
+    .logo-text {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    padding-top: 20px;
+    overflow-y: auto;
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      margin-bottom: 5px;
+    }
+
+    a {
+      display: flex;
+      align-items: center;
+      padding: 12px 25px;
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      transition: all 0.2s;
+      font-size: 14px;
+      border-left: 4px solid transparent;
+
+      svg {
+        margin-right: 12px;
+        opacity: 0.8;
+      }
+
+      &:hover {
+        background-color: rgba(255,255,255,0.05);
+        color: white;
+        svg { opacity: 1; }
+      }
+
+      &.active {
+        background-color: rgba(255,255,255,0.1);
+        color: white;
+        border-left-color: $puc-gold; 
+        font-weight: 600;
+
+        svg { opacity: 1; stroke: $puc-gold; }
+      }
+    }
+  }
+
+  .sidebar-footer {
+    padding: 20px;
+    text-align: center;
+    color: rgba(255,255,255,0.3);
+    font-size: 12px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: $bg-gray;
+  overflow: hidden;
+
+  .topbar {
+    height: 70px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    flex-shrink: 0;
+
+    .page-title {
+      font-size: 18px;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .user-actions {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+
+      .user-greeting {
+        font-size: 14px;
+        color: #666;
+        font-weight: 500;
+      }
+
+      .btn-logout {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: transparent;
+        border: 1px solid #ddd;
+        padding: 8px 16px;
+        border-radius: 20px;
+        color: $puc-blue;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+          background: #fff8f8;
+          border-color: #e74c3c;
+          color: #e74c3c;
+        }
+      }
+    }
+  }
+
+  .content-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0; 
+  }
+}
+
+@media (max-width: 768px) {
+  .app-layout { flex-direction: column; }
+  
+  .sidebar {
+    width: 100%;
+    height: auto;
+    
+    .sidebar-header, .sidebar-footer { display: none; }
+    
+    .sidebar-nav {
+      padding: 0;
+      ul {
+        display: flex;
+        justify-content: space-around;
+        background: $puc-blue;
+      }
+      li { margin: 0; }
+      a {
+        flex-direction: column;
+        padding: 10px;
+        font-size: 10px;
+        text-align: center;
+        border-left: none;
+        border-bottom: 3px solid transparent;
+        
+        svg { margin: 0 0 4px 0; }
+
+        &.active {
+          border-left-color: transparent;
+          border-bottom-color: $puc-gold;
+        }
+      }
+    }
+  }
+
+  .main-content {
+    .topbar { padding: 0 15px; height: 60px; }
+  }
+}

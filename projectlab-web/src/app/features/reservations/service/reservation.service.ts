@@ -10,7 +10,7 @@ import {
   providedIn: 'root',
 })
 export class ReservationService {
-  private apiUrl = 'https://localhost:8000/api/Reservation';
+  private apiUrl = 'http://localhost:8000/api/Reservation';
 
   constructor(private http: HttpClient) {}
 

@@ -8,6 +8,7 @@ import {
 } from '@angular/forms';
 import { ReservationService } from '../service/reservation.service';
 import { ReservationRequest } from '../model/reservation.model';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-reservation-form',
@@ -26,10 +27,10 @@ export class ReservationFormComponent {
 
   constructor(
     private fb: FormBuilder,
-    private reservationService: ReservationService
+    private reservationService: ReservationService,
+    private authService: AuthService
   ) {
     this.form = this.fb.group({
-      userId: ['', Validators.required],
       date: ['', Validators.required],
       startTime: ['', Validators.required],
       endTime: ['', Validators.required],
@@ -38,6 +39,13 @@ export class ReservationFormComponent {
 
   onSubmit() {
     if (this.form.valid) {
+      const currentUser = this.authService.currentUserValue;
+
+      if (!currentUser) {
+        alert('Sessão expirada. Por favor, faça login novamente.');
+        return;
+      }
+
       const formVal = this.form.value;
       const dateBase = formVal.date;
 
@@ -50,7 +58,7 @@ export class ReservationFormComponent {
       const reservationDate = new Date(`${dateBase}T00:00:00`).toISOString();
 
       const request: ReservationRequest = {
-        userId: formVal.userId,
+        userId: currentUser.id,
         laboratoryId: this.laboratoryId,
         reservationDate: reservationDate,
         startTime: startDateTime,
@@ -64,7 +72,8 @@ export class ReservationFormComponent {
         },
         error: (err) => {
           console.error(err);
-          alert('Erro ao reservar: ' + (err.error?.detail || err.message));
+          const msg = err.error?.detail || err.error?.message || err.message;
+          alert('Erro ao reservar: ' + msg);
         },
       });
     } else {

@@ -1,0 +1,47 @@
+<div class="login-wrapper">
+  <div class="login-card">
+    <div class="card-accent"></div>
+
+    <div class="brand">
+      <h1>ProjectLab</h1>
+      <p>Acesso ao Sistema</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label>Registro Acadêmico (RA)</label>
+        <input
+          type="text"
+          formControlName="ra"
+          placeholder="Digite seu RA"
+          [class.error]="
+            loginForm.get('ra')?.invalid && loginForm.get('ra')?.touched
+          "
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Senha</label>
+        <input
+          type="password"
+          formControlName="password"
+          placeholder="Digite sua senha"
+          [class.error]="
+            loginForm.get('password')?.invalid &&
+            loginForm.get('password')?.touched
+          "
+        />
+      </div>
+
+      <div *ngIf="errorMessage" class="alert-error">
+        {{ errorMessage }}
+      </div>
+
+      <button type="submit" [disabled]="loginForm.invalid || isLoading">
+        {{ isLoading ? "Entrando..." : "Entrar" }}
+      </button>
+    </form>
+  </div>
+
+  <div class="copyright">© 2026 ProjectLab. Todos os direitos reservados.</div>
+</div>

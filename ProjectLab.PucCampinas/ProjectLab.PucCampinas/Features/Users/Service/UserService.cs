@@ -18,11 +18,13 @@ namespace ProjectLab.PucCampinas.Features.Users.Service
         private readonly AuthService _authService;
         private readonly IEmailService _emailService;
 
-        public UserService(AppDbContext context, ICustomErrorHandler errorHandler, IViaCepService viaCepService)
+        public UserService(AppDbContext context, ICustomErrorHandler errorHandler, IViaCepService viaCepService, AuthService authService, IEmailService emailService)
               : base(errorHandler)
         {
             _context = context;
             _viaCepService = viaCepService;
+            _authService = authService;
+            _emailService = emailService;
         }
         public async Task<UserResponse> CreateUser(UserRequest request, AuthService authService)
         {
@@ -40,13 +42,21 @@ namespace ProjectLab.PucCampinas.Features.Users.Service
 
                 if (!string.IsNullOrWhiteSpace(user.Cep))
                 {
-                    var address = await _viaCepService.GetAddressByCep(user.Cep);
-                    if (address != null)
+                    try
                     {
-                        user.Logradouro = address.Logradouro;
-                        user.Bairro = address.Bairro;
-                        user.Cidade = address.Localidade;
-                        user.Estado = address.Uf;
+                        var address = await _viaCepService.GetAddressByCep(user.Cep);
+
+                        if (address != null)
+                        {
+                            user.Logradouro = address.Logradouro;
+                            user.Bairro = address.Bairro;
+                            user.Cidade = address.Localidade;
+                            user.Estado = address.Uf;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"ALERTA: O ViaCEP falhou: {ex.Message}. O usuário será salvo sem endereço completo.");
                     }
                 }
 
@@ -56,10 +66,15 @@ namespace ProjectLab.PucCampinas.Features.Users.Service
                 var token = _authService.GenerateSetupToken(user);
                 var link = $"http://localhost:4200/setup-password?token={token}";
 
+                Console.WriteLine("\n\n==================================================");
+                Console.WriteLine("🚨 ATENÇÃO DEV! LINK PARA DEFINIR SENHA:");
+                Console.WriteLine(link);
+                Console.WriteLine("==================================================\n\n");
+
                 var emailData = new
                 {
                     name = user.Name,
-                    ra = user.Ra, 
+                    ra = user.Ra,
                     link = link
                 };
 
@@ -72,7 +87,6 @@ namespace ProjectLab.PucCampinas.Features.Users.Service
                     Email = user.Email,
                     Role = user.Role,
                     PhoneNumber = user.PhoneNumber,
-
                     Cep = user.Cep,
                     Logradouro = user.Logradouro,
                     Bairro = user.Bairro,
