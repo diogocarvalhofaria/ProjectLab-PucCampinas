@@ -6,10 +6,10 @@ $text-dark: #333;
 $text-muted: #666;
 
 .dashboard-container {
-  animation: fadeIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: fadeIn 1s cubic-bezier(0.2, 0.8, 0.2, 1);
   padding-bottom: 40px;
-  max-width: 1200px;
-  margin: 0 auto; 
+  animation: fadeIn 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+  padding: 40px;
 }
 
 .page-header {
@@ -42,27 +42,28 @@ $text-muted: #666;
     color: $puc-blue;
     font-weight: 600;
     border: 1px solid #d0d7de;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
   }
 }
 
 .grid-layout {
   display: grid;
-  grid-template-columns: 350px 1fr;
+  grid-template-columns: 350px 1fr; 
   gap: 30px;
+  align-items: start;
 
   @media (max-width: 900px) {
-    grid-template-columns: 1fr; 
+    grid-template-columns: 1fr;
   }
 }
 
 .info-card {
   background: white;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.03); 
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
   border: 1px solid #e0e0e0;
   overflow: hidden;
-  height: fit-content;
-
+  
   .card-accent-top {
     height: 5px;
     background: linear-gradient(90deg, $puc-blue 0%, $puc-gold 100%);
@@ -160,7 +161,6 @@ $text-muted: #666;
     position: relative;
     overflow: hidden;
 
-    // Ícone Redondo
     .icon-box {
       width: 50px;
       height: 50px;
@@ -198,18 +198,16 @@ $text-muted: #666;
       align-items: center;
       transition: transform 0.2s, color 0.2s;
       
-      svg {
-        stroke: currentColor;
-      }
+      svg { stroke: currentColor; }
     }
 
     &.primary {
-      border-left: 4px solid $puc-blue; 
+      border-left: 4px solid $puc-blue;
 
       &:hover {
-        transform: translateY(-3px); 
+        transform: translateY(-3px);
         box-shadow: 0 8px 25px rgba(0, 59, 113, 0.12);
-        border-color: transparent; 
+        border-color: transparent;
 
         .icon-box {
           background: rgba(0, 59, 113, 0.1);
