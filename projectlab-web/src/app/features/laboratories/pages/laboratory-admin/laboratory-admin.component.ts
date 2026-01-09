@@ -39,6 +39,10 @@ export class LaboratoryAdminComponent implements OnInit {
     return !!this.selectedLab;
   }
 
+  get isEditing(): boolean {
+    return !!this.selectedLab;
+  }
+
   currentPage = 1;
   totalPages = 1;
   hasNext = false;
