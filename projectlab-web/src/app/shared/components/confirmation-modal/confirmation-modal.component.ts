@@ -12,6 +12,8 @@ export class ConfirmationModalComponent {
   @Input() title: string = 'Confirmação';
   @Input() message: string = 'Tem certeza?';
 
+  @Input() confirmButtonText: string = 'Sim, Excluir';
+
   @Output() confirm = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
 

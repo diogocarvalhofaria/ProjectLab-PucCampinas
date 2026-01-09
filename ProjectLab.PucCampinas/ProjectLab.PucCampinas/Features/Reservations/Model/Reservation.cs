@@ -4,6 +4,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ProjectLab.PucCampinas.Features.Reservations.Model
 {
+    public enum ReservationStatus
+    {
+        Confirmed = 0,
+        Cancelled = 1,
+        Completed = 2
+    }
+
     public class Reservation
     {
         [Required]
@@ -22,6 +29,7 @@ namespace ProjectLab.PucCampinas.Features.Reservations.Model
         public DateTime EndTime { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime? UpdatedAt { get; set; }
+        public ReservationStatus Status { get; set; } = ReservationStatus.Confirmed;
 
     }
 }

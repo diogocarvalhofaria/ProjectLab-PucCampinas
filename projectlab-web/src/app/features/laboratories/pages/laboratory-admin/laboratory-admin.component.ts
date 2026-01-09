@@ -2,16 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-
 import {
   LaboratoryService,
-  SearchParams, // <--- Importante
+  SearchParams,
 } from '../../services/laboratory.service';
 import { LaboratoryResponse } from '../../models/laboratory.model';
-import { LabCardComponent } from '../../../../shared/components/lab-card/lab-card.component';
 import { LaboratoryFormComponent } from '../../components/laboratory-form/laboratory-form.component';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { ModalWrapperComponent } from '../../../../shared/components/modal-wrapper/modal-wrapper.component';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-laboratory-admin',
@@ -19,7 +18,6 @@ import { ModalWrapperComponent } from '../../../../shared/components/modal-wrapp
   imports: [
     CommonModule,
     RouterModule,
-    LabCardComponent,
     LaboratoryFormComponent,
     ConfirmationModalComponent,
     ModalWrapperComponent,
@@ -31,10 +29,15 @@ export class LaboratoryAdminComponent implements OnInit {
   laboratories: LaboratoryResponse[] = [];
   loading = false;
 
-  showForm = false;
-  selectedLab: LaboratoryResponse | null = null;
+  showModal = false;
   showDeleteModal = false;
+  selectedLab: LaboratoryResponse | null = null;
   idToDelete: string | null = null;
+  isAdmin = false;
+
+  get isEditing(): boolean {
+    return !!this.selectedLab;
+  }
 
   currentPage = 1;
   totalPages = 1;
@@ -44,9 +47,15 @@ export class LaboratoryAdminComponent implements OnInit {
   keyword = '';
   selectedBuilding = '';
 
-  constructor(private laboratoryService: LaboratoryService) {}
+  constructor(
+    private laboratoryService: LaboratoryService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
+    const user = this.authService.getCurrentUser();
+    this.isAdmin = user?.role === 'Admin';
+
     this.fetchLaboratories();
   }
 
@@ -63,12 +72,10 @@ export class LaboratoryAdminComponent implements OnInit {
     this.laboratoryService.findAll(params).subscribe({
       next: (response) => {
         this.laboratories = response.results;
-
         this.currentPage = response.currentPage;
         this.totalPages = response.totalPages;
         this.hasNext = response.nextPage;
         this.hasPrevious = response.previousPage;
-
         this.loading = false;
       },
       error: (err: HttpErrorResponse) => {
@@ -85,11 +92,44 @@ export class LaboratoryAdminComponent implements OnInit {
     this.fetchLaboratories();
   }
 
-  onBuildingChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    this.selectedBuilding = target.value;
-    this.currentPage = 1;
+  openModal() {
+    this.selectedLab = null;
+    this.showModal = true;
+  }
+
+  editLab(lab: LaboratoryResponse) {
+    this.selectedLab = lab;
+    this.showModal = true;
+  }
+
+  deleteLab(lab: LaboratoryResponse) {
+    this.idToDelete = lab.id;
+    this.showDeleteModal = true;
+  }
+
+  closeModal() {
+    this.showModal = false;
+    this.showDeleteModal = false;
+    this.selectedLab = null;
+    this.idToDelete = null;
+  }
+
+  onLabSaved() {
+    this.closeModal();
     this.fetchLaboratories();
+  }
+
+  confirmDelete() {
+    if (this.idToDelete) {
+      this.laboratoryService.delete(this.idToDelete).subscribe({
+        next: () => {
+          this.fetchLaboratories();
+          this.closeModal();
+        },
+        error: (err: HttpErrorResponse) =>
+          console.error('Erro ao excluir', err),
+      });
+    }
   }
 
   nextPage() {
@@ -104,52 +144,5 @@ export class LaboratoryAdminComponent implements OnInit {
       this.currentPage--;
       this.fetchLaboratories();
     }
-  }
-
-  openNewForm() {
-    this.selectedLab = null;
-    this.showForm = true;
-  }
-
-  openEditForm(lab: LaboratoryResponse) {
-    this.selectedLab = lab;
-    this.showForm = true;
-  }
-
-  closeForm() {
-    this.showForm = false;
-    this.selectedLab = null;
-  }
-
-  toggleForm() {
-    this.showForm = !this.showForm;
-  }
-
-  onLabSaved() {
-    this.showForm = false;
-    this.fetchLaboratories();
-  }
-
-  openDeleteModal(id: string) {
-    this.idToDelete = id;
-    this.showDeleteModal = true;
-  }
-
-  confirmDelete() {
-    if (this.idToDelete) {
-      this.laboratoryService.delete(this.idToDelete).subscribe({
-        next: () => {
-          this.fetchLaboratories(); // A lista atualiza mantendo filtros atuais
-          this.closeModal();
-        },
-        error: (err: HttpErrorResponse) =>
-          console.error('Erro ao excluir', err),
-      });
-    }
-  }
-
-  closeModal() {
-    this.showDeleteModal = false;
-    this.idToDelete = null;
   }
 }

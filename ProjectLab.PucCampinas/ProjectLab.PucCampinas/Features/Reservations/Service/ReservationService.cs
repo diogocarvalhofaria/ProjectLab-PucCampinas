@@ -5,6 +5,7 @@ using ProjectLab.PucCampinas.Features.Reservations.DTOs;
 using ProjectLab.PucCampinas.Features.Reservations.Model;
 using ProjectLab.PucCampinas.Infrastructure.Data;
 using ProjectLab.PucCampinas.shared.Service;
+using System.Numerics;
 
 namespace ProjectLab.PucCampinas.Features.Reservations.Service
 {
@@ -158,7 +159,8 @@ namespace ProjectLab.PucCampinas.Features.Reservations.Service
                     UserId = r.UserId,
                     UserName = r.User.Name,
                     LaboratoryId = r.LaboratoryId,
-                    LaboratoryName = r.Laboratory.Name
+                    LaboratoryName = r.Laboratory.Name,
+                    Status = r.Status.ToString()
                 });
 
                 return await responseQuery.ToPaginatedResultAsync(filter.Page, filter.Size);
@@ -166,6 +168,94 @@ namespace ProjectLab.PucCampinas.Features.Reservations.Service
             catch (Exception ex)
             {
                 throw new Exception("Erro ao buscar reservas: " + ex.Message);
+            }
+        }
+
+        public async Task<List<Reservation>> GetByUserId(Guid userId)
+        {
+            try
+            {
+                return await _context.Reservations
+                    .Include(r => r.Laboratory)
+                    .Where(r => r.UserId == userId)
+                    .OrderByDescending(r => r.ReservationDate)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao obter reserva por usuário: " + ex.Message);
+            }
+        }
+
+        public async Task<List<ReservationResponse>> GetMyReservation(Guid userId)
+        {
+            try
+            {
+                var reservations = await GetByUserId(userId);
+
+                return reservations.Select(r => new ReservationResponse
+                {
+                    Id = r.Id,
+                    LaboratoryName = r.Laboratory?.Name ?? "Desconhecido",
+                    ReservationDate = r.ReservationDate,
+                    StartTime = r.StartTime,
+                    EndTime = r.EndTime,
+                    UserId = r.UserId,
+                    UserName = r.User?.Name ?? "",
+                    LaboratoryId = r.LaboratoryId,
+                    Status = r.Status.ToString()
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao obter reservas do usuário: " + ex.Message);
+            }
+        }
+
+        public async Task CancelReservation(Guid id)
+        {
+            try
+            {
+                var reservation = await _context.Reservations.FindAsync(id);
+
+                if (reservation == null)
+                    throw new Exception("Reserva não encontrada.");
+
+                if (reservation.ReservationDate < DateTime.Today)
+                    throw new Exception("Não é possível cancelar reservas passadas.");
+
+                reservation.Status = ReservationStatus.Cancelled;
+                reservation.UpdatedAt = DateTime.Now;
+
+                _context.Reservations.Update(reservation);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao cancelar reserva: " + ex.Message);
+            }
+        }
+
+        public async Task<List<ReservedTimes>> GetReservedTimes(Guid laboratoryId, DateTime date)
+        {
+            try
+            {
+                var reservations = await _context.Reservations
+                    .Where(r => r.LaboratoryId == laboratoryId &&
+                                r.ReservationDate.Date == date.Date &&
+                                r.Status != ReservationStatus.Cancelled)
+                    .Select(r => new ReservedTimes
+                    {
+                        StartTime = r.StartTime.ToString("HH:mm"),
+                        EndTime = r.EndTime.ToString("HH:mm")
+                    })
+                    .ToListAsync();
+
+                return reservations;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao buscar horários ocupados: " + ex.Message);
             }
         }
 

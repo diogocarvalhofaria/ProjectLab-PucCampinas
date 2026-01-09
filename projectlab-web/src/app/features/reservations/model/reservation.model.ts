@@ -15,4 +15,10 @@ export interface ReservationResponse {
   userName: string;
   laboratoryId: string;
   laboratoryName: string;
+  status: string;
+}
+
+export interface ReservedTime {
+  startTime: string;
+  endTime: string;
 }

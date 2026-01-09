@@ -11,5 +11,9 @@ namespace ProjectLab.PucCampinas.Features.Reservations.Service
         Task<ReservationResponse> CreateReservation(ReservationRequest request);
         Task UpdateReservation(Guid id, ReservationRequest request);
         Task DeleteReservation(Guid id);
+        Task<List<Reservation>> GetByUserId(Guid userId);
+        Task CancelReservation(Guid id);
+        Task<List<ReservedTimes>> GetReservedTimes(Guid laboratoryId, DateTime date);
+        Task<List<ReservationResponse>> GetMyReservation(Guid userId);
     }
 }

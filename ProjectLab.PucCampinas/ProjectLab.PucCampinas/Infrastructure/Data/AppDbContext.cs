@@ -30,6 +30,11 @@ namespace ProjectLab.PucCampinas.Infrastructure.Data
                 .HasIndex(u => u.Ra)
                 .IsUnique();
 
+            modelBuilder.Entity<Reservation>()
+                .Property(r => r.Status)
+                .HasConversion<string>();
+            base.OnModelCreating(modelBuilder);
+
         }
     }
 }

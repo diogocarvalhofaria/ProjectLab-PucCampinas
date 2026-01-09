@@ -6,6 +6,7 @@ import { UserFormComponent } from '../../components/user-form/user-form.componen
 import { ModalWrapperComponent } from '../../../../shared/components/modal-wrapper/modal-wrapper.component';
 import { UserService, SearchParams } from '../../services/user.service';
 import { UserResponse } from '../../models/user.model';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 
 @Component({
   selector: 'app-user-admin',
@@ -15,6 +16,7 @@ import { UserResponse } from '../../models/user.model';
     RouterModule,
     UserFormComponent,
     ModalWrapperComponent,
+    ConfirmationModalComponent,
   ],
   templateUrl: './user-admin.component.html',
   styleUrl: './user-admin.component.scss',
@@ -25,6 +27,9 @@ export class UserAdminComponent implements OnInit {
 
   showModal = false;
   selectedUser: UserResponse | null = null;
+
+  showDeleteModal = false;
+  userToDelete: UserResponse | null = null;
 
   get isEditing(): boolean {
     return !!this.selectedUser;
@@ -51,6 +56,7 @@ export class UserAdminComponent implements OnInit {
       page: this.currentPage,
       size: 9,
       keyword: this.keyword,
+      role: this.selectedRole,
     };
 
     this.userService.findAll(params).subscribe({
@@ -79,8 +85,8 @@ export class UserAdminComponent implements OnInit {
   onFilterRole(event: Event) {
     const target = event.target as HTMLSelectElement;
     this.selectedRole = target.value;
-    if (this.selectedRole) {
-    }
+    this.currentPage = 1;
+    this.fetchUsers();
   }
 
   openModal() {
@@ -103,15 +109,26 @@ export class UserAdminComponent implements OnInit {
     this.fetchUsers();
   }
 
-  deleteUser(user: UserResponse) {
-    if (confirm(`Tem certeza que deseja excluir ${user.name}?`)) {
-      this.userService.delete(user.id).subscribe({
+  openDeleteModal(user: UserResponse) {
+    this.userToDelete = user;
+    this.showDeleteModal = true;
+  }
+
+  confirmDelete() {
+    if (this.userToDelete) {
+      this.userService.delete(this.userToDelete.id).subscribe({
         next: () => {
           this.fetchUsers();
+          this.closeDeleteModal();
         },
         error: (err) => console.error('Erro ao deletar', err),
       });
     }
+  }
+
+  closeDeleteModal() {
+    this.showDeleteModal = false;
+    this.userToDelete = null;
   }
 
   nextPage() {

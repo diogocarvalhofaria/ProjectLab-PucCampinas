@@ -10,6 +10,7 @@ import {
 
 export interface SearchParams {
   keyword?: string;
+  role?: string;
   page?: number;
   size?: number;
 }
@@ -27,10 +28,14 @@ export class UserService {
   ): Observable<PaginatedResult<UserResponse>> {
     let params = new HttpParams()
       .set('Page', paramsInput.page || 1)
-      .set('Size', paramsInput.size || 10);
+      .set('Size', paramsInput.size || 9);
 
     if (paramsInput.keyword) {
       params = params.set('Keyword', paramsInput.keyword);
+    }
+
+    if (paramsInput.role) {
+      params = params.set('Role', paramsInput.role);
     }
 
     return this.http.get<PaginatedResult<UserResponse>>(
@@ -38,7 +43,6 @@ export class UserService {
       { params }
     );
   }
-
   create(user: UserRequest): Observable<void> {
     return this.http.post<void>(this.apiUrl, user);
   }

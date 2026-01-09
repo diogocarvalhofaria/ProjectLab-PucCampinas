@@ -1,4 +1,3 @@
-// --- VARIÁVEIS PUC ---
 $puc-blue: #003B71;
 $puc-gold: #F2C94C;
 $bg-gray: #f4f6f8;
@@ -15,7 +14,6 @@ $edit-yellow: #f39c12;
   animation: fadeIn 0.5s ease-out;
 }
 
-// --- CABEÇALHO (Igual ao Labs) ---
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -51,7 +49,7 @@ $edit-yellow: #f39c12;
       text-decoration: none;
       transition: all 0.2s;
       cursor: pointer;
-      font-family: inherit; // Corrige fonte em button
+      font-family: inherit;
     }
 
     .btn-outline {
@@ -71,16 +69,14 @@ $edit-yellow: #f39c12;
   }
 }
 
-// --- FILTROS E BUSCA (Layout Flex) ---
 .filters-section {
   display: flex;
   gap: 20px;
   margin-bottom: 35px;
   flex-wrap: wrap;
 
-  // Busca
   .search-wrapper {
-    flex: 2; // Ocupa mais espaço
+    flex: 2;
     position: relative;
     min-width: 280px;
 
@@ -109,7 +105,6 @@ $edit-yellow: #f39c12;
     }
   }
 
-  // Filtro Dropdown
   .filter-wrapper {
     flex: 1;
     min-width: 200px;
@@ -142,14 +137,12 @@ $edit-yellow: #f39c12;
   }
 }
 
-// --- GRID DE USUÁRIOS ---
 .user-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 25px;
 }
 
-// --- CARD DE USUÁRIO ---
 .user-card {
   background: white;
   border-radius: 8px;
@@ -163,7 +156,6 @@ $edit-yellow: #f39c12;
     box-shadow: 0 5px 15px rgba(0,0,0,0.08);
   }
 
-  // Topo do Card
   .card-header {
     padding: 20px;
     border-bottom: 1px solid #f0f0f0;
@@ -192,7 +184,6 @@ $edit-yellow: #f39c12;
     }
   }
 
-  // Detalhes
   .card-body {
     padding: 20px;
     
@@ -214,7 +205,6 @@ $edit-yellow: #f39c12;
     }
   }
 
-  // Botões de Ação
   .card-actions {
     padding: 15px 20px;
     background: #fafafa;
@@ -253,7 +243,6 @@ $edit-yellow: #f39c12;
   }
 }
 
-// --- PAGINAÇÃO & EMPTY STATE (Reutilizado) ---
 .pagination {
   display: flex;
   justify-content: center;

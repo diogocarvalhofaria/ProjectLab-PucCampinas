@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
   ReservationRequest,
   ReservationResponse,
+  ReservedTime,
 } from '../model/reservation.model';
 
 @Injectable({
@@ -20,5 +21,42 @@ export class ReservationService {
 
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  getMyReservations(userId: string): Observable<ReservationResponse[]> {
+    const params = new HttpParams().set('userId', userId);
+
+    return this.http.get<ReservationResponse[]>(
+      `${this.apiUrl}/my-reservations`,
+      { params }
+    );
+  }
+  cancel(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}/cancel`);
+  }
+  getReservedTimes(
+    laboratoryId: string,
+    date: string
+  ): Observable<ReservedTime[]> {
+    const params = new HttpParams()
+      .set('laboratoryId', laboratoryId)
+      .set('date', date);
+
+    return this.http.get<ReservedTime[]>(`${this.apiUrl}/reservation-time`, {
+      params,
+    });
+  }
+
+  searchReservations(
+    keyword: string = '',
+    page: number = 1,
+    size: number = 10
+  ) {
+    const params = new HttpParams()
+      .set('Keyword', keyword)
+      .set('Page', page.toString())
+      .set('Size', size.toString());
+
+    return this.http.get<any>(`${this.apiUrl}/search`, { params });
   }
 }

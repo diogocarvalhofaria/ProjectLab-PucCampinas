@@ -10,5 +10,6 @@
         public string UserName { get; set; } = string.Empty;
         public Guid LaboratoryId { get; set; }
         public string LaboratoryName { get; set; } = string.Empty;
+        public string Status { get; set; }
     }
 }

@@ -1,0 +1,131 @@
+<div class="page-container">
+  <header class="page-header">
+    <div class="header-content">
+      <h1>Minhas Reservas</h1>
+      <p>Histórico e agendamentos futuros</p>
+    </div>
+
+    <div class="header-actions">
+      <a routerLink="/home" class="btn-outline">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Voltar
+      </a>
+    </div>
+  </header>
+
+  <div *ngIf="loading" class="loading-state">
+    <p>Carregando suas reservas...</p>
+  </div>
+
+  <div class="reservation-grid" *ngIf="!loading && reservations.length > 0">
+    <div
+      class="res-card"
+      *ngFor="let res of reservations"
+      [class.cancelled]="res.status === 'Cancelled'"
+    >
+      <div class="card-top">
+        <div class="date-badge">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          {{ res.reservationDate | date : "dd/MM/yyyy" }}
+        </div>
+
+        <span class="status-badge" [ngClass]="res.status.toLowerCase()">
+          {{ res.status === "Confirmed" ? "Confirmado" : "Cancelado" }}
+        </span>
+      </div>
+
+      <div class="card-content">
+        <h3>{{ res.laboratoryName }}</h3>
+
+        <div class="time-row">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+
+          <span class="time-display">
+            {{ res.startTime | date : "HH:mm" }}
+            <span class="separator">até</span>
+            {{ res.endTime | date : "HH:mm" }}
+          </span>
+        </div>
+      </div>
+
+      <div
+        class="card-footer"
+        *ngIf="res.status !== 'Cancelled' && !isPast(res.reservationDate)"
+      >
+        <button class="btn-cancel" (click)="openCancelModal(res)">
+          Cancelar Reserva
+        </button>
+      </div>
+
+      <div
+        class="card-footer passed"
+        *ngIf="isPast(res.reservationDate) && res.status !== 'Cancelled'"
+      >
+        <small>Reserva finalizada</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && reservations.length === 0">
+    <h3>Nenhuma reserva encontrada</h3>
+    <p>Você ainda não realizou nenhum agendamento.</p>
+    <a routerLink="/laboratories" class="btn-primary mt-3"
+      >Fazer nova reserva</a
+    >
+  </div>
+
+  <app-confirmation-modal
+    *ngIf="showCancelModal"
+    title="Cancelar Reserva"
+    [message]="
+      'Tem certeza que deseja cancelar sua reserva no ' +
+      selectedReservation?.laboratoryName +
+      '?'
+    "
+    confirmButtonText="Sim, Cancelar"
+    (confirm)="confirmCancel()"
+    (cancel)="closeCancelModal()"
+  >
+  </app-confirmation-modal>
+</div>
