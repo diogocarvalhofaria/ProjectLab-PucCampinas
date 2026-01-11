@@ -14,7 +14,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-
+import { Observable } from 'rxjs';
 import { UserService } from '../../services/user.service';
 import { UserResponse } from '../../models/user.model';
 
@@ -27,13 +27,17 @@ import { UserResponse } from '../../models/user.model';
 })
 export class UserFormComponent implements OnChanges {
   @Output() saved = new EventEmitter<void>();
+  @Output() cancelled = new EventEmitter<void>();
   @Input() userData: UserResponse | null = null;
 
   form: FormGroup;
+  showSuccess = false;
+  isSubmitting = false;
 
   constructor(private fb: FormBuilder, private userService: UserService) {
     this.form = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
+      ra: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       role: ['Student', Validators.required],
       phoneNumber: ['', Validators.required],
@@ -47,16 +51,20 @@ export class UserFormComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    this.showSuccess = false;
+    this.isSubmitting = false;
+
     if (this.userData) {
       this.form.patchValue(this.userData);
+      this.form.get('ra')?.disable();
     } else {
       this.form.reset({ role: 'Student' });
+      this.form.get('ra')?.enable();
     }
   }
 
   buscarCep() {
     const cepRaw = this.form.get('cep')?.value;
-
     if (!cepRaw) return;
 
     const cep = cepRaw.replace(/\D/g, '');
@@ -64,48 +72,50 @@ export class UserFormComponent implements OnChanges {
     if (cep.length === 8) {
       this.userService.consultarCep(cep).subscribe({
         next: (dados) => {
-          this.form.patchValue({
-            logradouro: dados.logradouro,
-            bairro: dados.bairro,
-            cidade: dados.localidade,
-            estado: dados.uf,
-          });
+          if (!(dados as any).erro) {
+            this.form.patchValue({
+              logradouro: dados.logradouro,
+              bairro: dados.bairro,
+              cidade: dados.localidade,
+              estado: dados.uf,
+            });
+          }
         },
-        error: (err) => {
-          console.error('Erro ao buscar CEP', err);
-        },
+        error: (err) => console.error('Erro ao buscar CEP', err),
       });
     }
   }
 
   onSubmit() {
     if (this.form.valid) {
+      this.isSubmitting = true;
       const formData = this.form.value;
-      if (this.userData) {
-        this.userService.update(this.userData.id, formData).subscribe({
-          next: () => {
-            alert('Usuário atualizado com sucesso!');
+
+      const request$: Observable<any> = this.userData
+        ? this.userService.update(this.userData.id, formData)
+        : this.userService.create(formData);
+
+      request$.subscribe({
+        next: () => {
+          this.showSuccess = true;
+          this.isSubmitting = false;
+
+          setTimeout(() => {
             this.saved.emit();
-          },
-          error: (err: HttpErrorResponse) => {
-            console.error('Erro ao atualizar:', err);
-            alert('Erro ao atualizar: ' + err.message);
-          },
-        });
-      } else {
-        this.userService.create(formData).subscribe({
-          next: () => {
-            alert('Usuário criado com sucesso!');
-            this.saved.emit();
-          },
-          error: (err: HttpErrorResponse) => {
-            console.error('Erro ao criar:', err);
-            alert('Erro ao criar usuário.');
-          },
-        });
-      }
+          }, 1500);
+        },
+        error: (err: HttpErrorResponse) => {
+          console.error('Erro:', err);
+          this.isSubmitting = false;
+          alert('Erro ao salvar: ' + (err.error?.message || err.message));
+        },
+      });
     } else {
       this.form.markAllAsTouched();
     }
+  }
+
+  onCancel() {
+    this.cancelled.emit();
   }
 }

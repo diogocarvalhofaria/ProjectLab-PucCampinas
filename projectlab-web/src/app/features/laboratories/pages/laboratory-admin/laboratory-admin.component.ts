@@ -35,14 +35,6 @@ export class LaboratoryAdminComponent implements OnInit {
   idToDelete: string | null = null;
   isAdmin = false;
 
-  get isEditing(): boolean {
-    return !!this.selectedLab;
-  }
-
-  get isEditing(): boolean {
-    return !!this.selectedLab;
-  }
-
   currentPage = 1;
   totalPages = 1;
   hasNext = false;
@@ -61,6 +53,10 @@ export class LaboratoryAdminComponent implements OnInit {
     this.isAdmin = user?.role === 'Admin';
 
     this.fetchLaboratories();
+  }
+
+  get isEditing(): boolean {
+    return !!this.selectedLab;
   }
 
   fetchLaboratories(): void {

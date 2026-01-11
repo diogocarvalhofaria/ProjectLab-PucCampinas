@@ -1,6 +1,24 @@
-<div class="form-container">
-  <h2>{{ userData ? "Editar Usuário" : "Novo Usuário" }}</h2>
+<div class="success-state" *ngIf="showSuccess">
+  <div class="icon-circle">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="48"
+      height="48"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+  </div>
+  <h3>Salvo com Sucesso!</h3>
+  <p>Os dados do usuário foram registrados.</p>
+</div>
 
+<div class="form-container" *ngIf="!showSuccess">
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
     <h4 class="section-title">Dados Pessoais</h4>
 
@@ -10,29 +28,32 @@
         formControlName="name"
         placeholder="Ex: João da Silva"
         class="input-field"
+        [class.has-error]="
+          form.get('name')?.invalid && form.get('name')?.touched
+        "
       />
       <small
         *ngIf="form.get('name')?.invalid && form.get('name')?.touched"
         class="error-msg"
       >
-        Nome é obrigatório.
+        Nome é obrigatório (mín. 3 chars).
       </small>
     </div>
 
     <div class="grid-2-col">
       <div>
-        <label class="label">E-mail</label>
+        <label class="label">Registro Acadêmico (RA)</label>
         <input
-          formControlName="email"
-          type="email"
-          placeholder="joao@email.com"
+          formControlName="ra"
+          placeholder="Ex: 123456"
           class="input-field"
+          [class.has-error]="form.get('ra')?.invalid && form.get('ra')?.touched"
         />
         <small
-          *ngIf="form.get('email')?.invalid && form.get('email')?.touched"
+          *ngIf="form.get('ra')?.invalid && form.get('ra')?.touched"
           class="error-msg"
         >
-          E-mail inválido.
+          RA é obrigatório.
         </small>
       </div>
 
@@ -46,13 +67,43 @@
       </div>
     </div>
 
+    <div class="input-group">
+      <label class="label">E-mail</label>
+      <input
+        formControlName="email"
+        type="email"
+        placeholder="joao@email.com"
+        class="input-field"
+        [class.has-error]="
+          form.get('email')?.invalid && form.get('email')?.touched
+        "
+      />
+      <small
+        *ngIf="form.get('email')?.invalid && form.get('email')?.touched"
+        class="error-msg"
+      >
+        E-mail inválido.
+      </small>
+    </div>
+
     <div class="input-group" style="margin-bottom: 20px">
       <label class="label">Telefone / Celular</label>
       <input
         formControlName="phoneNumber"
         placeholder="(11) 99999-9999"
         class="input-field"
+        [class.has-error]="
+          form.get('phoneNumber')?.invalid && form.get('phoneNumber')?.touched
+        "
       />
+      <small
+        *ngIf="
+          form.get('phoneNumber')?.invalid && form.get('phoneNumber')?.touched
+        "
+        class="error-msg"
+      >
+        Telefone obrigatório.
+      </small>
     </div>
 
     <h4 class="section-title mt-25">Endereço</h4>
@@ -66,6 +117,9 @@
           placeholder="00000-000"
           class="input-field"
           maxlength="9"
+          [class.has-error]="
+            form.get('cep')?.invalid && form.get('cep')?.touched
+          "
         />
       </div>
       <div>
@@ -74,6 +128,9 @@
           formControlName="logradouro"
           placeholder="Av. Brasil"
           class="input-field"
+          [class.has-error]="
+            form.get('logradouro')?.invalid && form.get('logradouro')?.touched
+          "
         />
       </div>
     </div>
@@ -84,6 +141,9 @@
         formControlName="bairro"
         placeholder="Centro"
         class="input-field"
+        [class.has-error]="
+          form.get('bairro')?.invalid && form.get('bairro')?.touched
+        "
       />
     </div>
 
@@ -94,6 +154,9 @@
           formControlName="cidade"
           placeholder="Campinas"
           class="input-field"
+          [class.has-error]="
+            form.get('cidade')?.invalid && form.get('cidade')?.touched
+          "
         />
       </div>
       <div>
@@ -104,12 +167,33 @@
           class="input-field"
           maxlength="2"
           style="text-transform: uppercase"
+          [class.has-error]="
+            form.get('estado')?.invalid && form.get('estado')?.touched
+          "
         />
       </div>
     </div>
 
-    <button type="submit" [disabled]="form.invalid" class="btn-submit">
-      {{ userData ? "Salvar Alterações" : "Cadastrar Usuário" }}
-    </button>
+    <div class="form-actions">
+      <button
+        type="button"
+        class="btn-cancel"
+        (click)="onCancel()"
+        [disabled]="isSubmitting"
+      >
+        Cancelar
+      </button>
+
+      <button
+        type="submit"
+        class="btn-submit"
+        [disabled]="form.invalid || isSubmitting"
+      >
+        <span *ngIf="!isSubmitting">{{
+          userData ? "Salvar Alterações" : "Cadastrar Usuário"
+        }}</span>
+        <span *ngIf="isSubmitting">Salvando...</span>
+      </button>
+    </div>
   </form>
 </div>

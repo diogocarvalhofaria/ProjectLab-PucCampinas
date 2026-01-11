@@ -1,123 +1,94 @@
-<div style="padding: 10px">
-  <h2 style="color: #004a80; margin-top: 0">
-    {{ labData ? "Editar Laboratório" : "Novo Laboratório" }}
-  </h2>
+<div class="success-state" *ngIf="showSuccess">
+  <div class="icon-circle">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="48"
+      height="48"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+  </div>
+  <h3>Salvo com Sucesso!</h3>
+  <p>Os dados foram registrados.</p>
+</div>
 
+<div class="form-container" *ngIf="!showSuccess">
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
-    <div style="margin-bottom: 20px">
-      <label
-        style="
-          display: block;
-          margin-bottom: 8px;
-          font-weight: 600;
-          color: #333;
-        "
-      >
-        Nome do Laboratório:
-      </label>
+    <div class="form-group">
+      <label>Nome do Laboratório:</label>
       <input
         formControlName="name"
         placeholder="Ex: Lab de Informática 01"
-        style="
-          width: 100%;
-          padding: 10px;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-          box-sizing: border-box;
-          font-size: 14px;
-        "
+        [class.error]="form.get('name')?.invalid && form.get('name')?.touched"
       />
-
       <small
+        class="error-msg"
         *ngIf="form.get('name')?.invalid && form.get('name')?.touched"
-        style="color: #dc3545; display: block; margin-top: 5px; font-size: 12px"
       >
         Nome é obrigatório (mínimo 3 caracteres).
       </small>
     </div>
 
-    <div style="margin-bottom: 20px">
-      <label
-        style="
-          display: block;
-          margin-bottom: 8px;
-          font-weight: 600;
-          color: #333;
-        "
-      >
-        Bloco:
-      </label>
+    <div class="form-group">
+      <label>Bloco:</label>
       <input
         formControlName="building"
         placeholder="Ex: Prédio H1"
-        style="
-          width: 100%;
-          padding: 10px;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-          box-sizing: border-box;
-          font-size: 14px;
+        [class.error]="
+          form.get('building')?.invalid && form.get('building')?.touched
         "
       />
-
       <small
+        class="error-msg"
         *ngIf="form.get('building')?.invalid && form.get('building')?.touched"
-        style="color: #dc3545; display: block; margin-top: 5px; font-size: 12px"
       >
         O prédio é obrigatório.
       </small>
     </div>
 
-    <div style="margin-bottom: 25px">
-      <label
-        style="
-          display: block;
-          margin-bottom: 8px;
-          font-weight: 600;
-          color: #333;
-        "
-      >
-        Capacidade (pessoas):
-      </label>
+    <div class="form-group">
+      <label>Capacidade (pessoas):</label>
       <input
         type="number"
         formControlName="capacity"
-        style="
-          width: 100%;
-          padding: 10px;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-          box-sizing: border-box;
-          font-size: 14px;
+        [class.error]="
+          form.get('capacity')?.invalid && form.get('capacity')?.touched
         "
       />
-
       <small
+        class="error-msg"
         *ngIf="form.get('capacity')?.invalid && form.get('capacity')?.touched"
-        style="color: #dc3545; display: block; margin-top: 5px; font-size: 12px"
       >
         A capacidade deve ser no mínimo 1.
       </small>
     </div>
 
-    <button
-      type="submit"
-      [disabled]="form.invalid"
-      [style.opacity]="form.invalid ? '0.6' : '1'"
-      [style.cursor]="form.invalid ? 'not-allowed' : 'pointer'"
-      style="
-        background: #004a80;
-        color: white;
-        border: none;
-        padding: 12px 20px;
-        border-radius: 4px;
-        width: 100%;
-        font-weight: bold;
-        font-size: 16px;
-        transition: 0.3s;
-      "
-    >
-      {{ labData ? "Salvar Alterações" : "Criar Laboratório" }}
-    </button>
+    <div class="actions">
+      <button
+        type="button"
+        class="btn-cancel"
+        (click)="onCancel()"
+        [disabled]="isSubmitting"
+      >
+        Cancelar
+      </button>
+
+      <button
+        type="submit"
+        class="btn-save"
+        [disabled]="form.invalid || isSubmitting"
+      >
+        <span *ngIf="!isSubmitting">{{
+          labData ? "Salvar Alterações" : "Criar Laboratório"
+        }}</span>
+        <span *ngIf="isSubmitting">Salvando...</span>
+      </button>
+    </div>
   </form>
 </div>

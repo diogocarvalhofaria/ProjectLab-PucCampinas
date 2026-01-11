@@ -1,8 +1,55 @@
+$puc-blue: #003B71;
+$danger-red: #dc3545;
+$success-green: #27ae60;
+$border-color: #ccc;
+
+// --- TELA DE SUCESSO ---
+.success-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  animation: popIn 0.3s ease-out;
+
+  .icon-circle {
+    width: 70px;
+    height: 70px;
+    background-color: lighten($success-green, 45%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+
+    svg {
+      color: $success-green;
+      width: 35px;
+      height: 35px;
+    }
+  }
+
+  h3 {
+    color: $puc-blue;
+    margin: 0 0 10px 0;
+    font-size: 22px;
+  }
+
+  p { color: #666; margin: 0; }
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+// --- FORMULÁRIO ---
 .form-container {
-  padding: 10px;
+  padding: 10px 0;
 
   h2 {
-    color: #004a80;
+    color: $puc-blue;
     margin-top: 0;
     margin-bottom: 20px;
   }
@@ -13,15 +60,14 @@
   border-bottom: 1px solid #eee;
   padding-bottom: 5px;
   margin-bottom: 15px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   
-  &.mt-25 {
-    margin-top: 25px;
-  }
+  &.mt-25 { margin-top: 25px; }
 }
 
-.input-group {
-  margin-bottom: 15px;
-}
+.input-group { margin-bottom: 15px; }
 
 .grid-2-col {
   display: grid;
@@ -55,37 +101,67 @@
 .input-field {
   width: 100%;
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid $border-color;
   border-radius: 4px;
   box-sizing: border-box;
   font-size: 14px;
+  transition: all 0.2s;
 
-  &.bg-white {
-    background: white;
+  &.bg-white { background: white; }
+
+  &:focus {
+    border-color: $puc-blue;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 59, 113, 0.1);
+  }
+
+  &.has-error {
+    border-color: $danger-red;
+    background-color: #fff8f8;
   }
 }
 
 .error-msg {
-  color: #dc3545;
+  color: $danger-red;
   display: block;
   margin-top: 4px;
   font-size: 12px;
 }
 
-.btn-submit {
-  background: #004a80;
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 4px;
-  width: 100%;
-  font-weight: bold;
-  font-size: 16px;
-  cursor: pointer;
-  transition: opacity 0.2s;
+// BOTÕES (LADO A LADO)
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #f0f0f0;
 
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.2s;
+    border: none;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  .btn-submit {
+    background: $puc-blue;
+    color: white;
+    &:hover:not(:disabled) { background: #002a52; }
+  }
+
+  .btn-cancel {
+    background: #f0f0f0;
+    color: #333;
+    border: 1px solid #ccc;
+    &:hover:not(:disabled) { background: #e0e0e0; }
   }
 }

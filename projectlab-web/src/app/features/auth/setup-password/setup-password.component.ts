@@ -33,7 +33,17 @@ export class SetupPasswordComponent implements OnInit {
   ) {
     this.form = this.fb.group(
       {
-        password: ['', [Validators.required, Validators.minLength(6)]],
+        password: [
+          '',
+          [
+            Validators.required,
+            Validators.minLength(8), // Mínimo 8
+            // Regex: 1 minúscula, 1 maiúscula, 1 número, 1 especial
+            Validators.pattern(
+              /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+            ),
+          ],
+        ],
         confirmPassword: ['', [Validators.required]],
       },
       { validators: this.passwordMatchValidator }

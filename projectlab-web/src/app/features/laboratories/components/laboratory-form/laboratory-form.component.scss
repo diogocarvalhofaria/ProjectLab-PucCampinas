@@ -1,0 +1,123 @@
+$puc-blue: #003B71;
+$danger-red: #dc3545;
+$success-green: #27ae60;
+
+// --- Tela de Sucesso ---
+.success-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  animation: popIn 0.3s ease-out;
+
+  .icon-circle {
+    width: 70px;
+    height: 70px;
+    background-color: lighten($success-green, 45%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+
+    svg {
+      color: $success-green;
+      width: 35px;
+      height: 35px;
+    }
+  }
+
+  h3 {
+    color: $puc-blue;
+    margin: 0 0 10px 0;
+    font-size: 22px;
+  }
+
+  p { color: #666; margin: 0; }
+}
+
+// --- Formulário ---
+.form-container {
+  padding: 10px 0;
+}
+
+.form-group {
+  margin-bottom: 20px;
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+    transition: all 0.2s;
+
+    &:focus {
+      border-color: $puc-blue;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(0, 59, 113, 0.1);
+    }
+
+    &.error {
+      border-color: $danger-red;
+      background-color: #fff8f8;
+    }
+  }
+
+  .error-msg {
+    color: $danger-red;
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+
+  button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.2s;
+    border: none;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  .btn-save {
+    background: $puc-blue;
+    color: white;
+    &:hover:not(:disabled) { background: #002a52; }
+  }
+
+  .btn-cancel {
+    background: #f0f0f0;
+    color: #333;
+    border: 1px solid #ccc;
+    &:hover:not(:disabled) { background: #e0e0e0; }
+  }
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}

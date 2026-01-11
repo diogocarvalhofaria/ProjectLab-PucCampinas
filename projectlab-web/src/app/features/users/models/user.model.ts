@@ -4,6 +4,7 @@ export interface UserResponse {
   email: string;
   role: string;
   phoneNumber: string;
+  ra: string;
   cep: string;
   logradouro: string;
   bairro: string;

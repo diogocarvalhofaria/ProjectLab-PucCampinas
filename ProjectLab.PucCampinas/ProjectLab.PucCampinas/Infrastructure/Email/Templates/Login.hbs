@@ -1,48 +1,79 @@
-<!DOCTYPE html>
-<html>
+ï»¿<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bem-vindo ao ProjectLab</title>
     <style>
+        /* Reset bÃ¡sico para garantir consistÃªncia entre clientes de email */
         body {
             font-family: Arial, sans-serif;
             color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
         }
 
         .container {
             max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
+            margin: 20px auto;
+            background-color: #ffffff;
             border: 1px solid #ddd;
             border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            overflow: hidden;
         }
 
         .header {
             background-color: #004a80;
             color: white;
-            padding: 15px;
+            padding: 20px;
             text-align: center;
-            border-radius: 8px 8px 0 0;
         }
 
+            .header h2 {
+                margin: 0;
+                font-size: 24px;
+            }
+
         .content {
-            padding: 20px;
+            padding: 30px;
+            line-height: 1.6;
+            font-size: 16px;
         }
 
         .button {
             display: inline-block;
             background-color: #27ae60;
-            color: white;
+            color: #ffffff !important; /* !important garante a cor no link */
             padding: 12px 24px;
             text-decoration: none;
             border-radius: 5px;
             font-weight: bold;
             margin-top: 20px;
+            font-size: 16px;
+            text-align: center;
         }
+
+            .button:hover {
+                background-color: #219150;
+            }
 
         .footer {
             margin-top: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
             font-size: 12px;
             color: #777;
             text-align: center;
+            border-top: 1px solid #eee;
+        }
+
+        a {
+            color: #004a80;
+            word-break: break-all; /* Quebra links longos se necessÃ¡rio */
         }
     </style>
 </head>
@@ -51,21 +82,30 @@
         <div class="header">
             <h2>Bem-vindo ao ProjectLab!</h2>
         </div>
+
         <div class="content">
-            <p>Olá, <strong>{{name}}</strong>!</p>
+            <p>OlÃ¡, <strong>{{name}}</strong>!</p>
+
             <p>Seu cadastro foi realizado com sucesso pela secretaria.</p>
-            <p>Seu Registro Acadêmico (RA) é: <strong>{{ra}}</strong></p>
-            <p>Para acessar o sistema e realizar reservas, você precisa definir sua senha clicando no botão abaixo:</p>
+
+            <p>Seu Registro AcadÃªmico (RA) Ã©: <strong>{{ra}}</strong></p>
+
+            <p>Para acessar o sistema e realizar reservas, vocÃª precisa definir sua senha clicando no botÃ£o abaixo:</p>
 
             <center>
-                <a href="{{link}}" class="button">Definir Minha Senha</a>
+                <a href="{{link}}" target="_blank" class="button">Definir Minha Senha</a>
             </center>
 
-            <p style="margin-top: 30px;">Ou copie este link no seu navegador:</p>
-            <p><small>{{link}}</small></p>
+            <p style="margin-top: 30px; border-top: 1px dashed #ddd; padding-top: 20px;">
+                Ou copie este link no seu navegador:
+            </p>
+            <p>
+                <small><a href="{{link}}">{{link}}</a></small>
+            </p>
         </div>
+
         <div class="footer">
-            <p>PUC-Campinas - Sistema de Reserva de Laboratórios</p>
+            <p>Sistema de Reserva de LaboratÃ³rios</p>
         </div>
     </div>
 </body>

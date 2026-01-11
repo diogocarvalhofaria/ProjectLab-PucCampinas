@@ -43,7 +43,9 @@ namespace ProjectLab.PucCampinas.Features.Laboratories.Service
                     Id = lab.Id,
                     Name = lab.Name,
                     Building = lab.Building,
-                    Capacity = lab.Capacity
+                    Capacity = lab.Capacity,
+                    Room = lab.Room
+
                 };
             }
             catch (Exception ex)
@@ -63,7 +65,8 @@ namespace ProjectLab.PucCampinas.Features.Laboratories.Service
                     Id = Guid.NewGuid(),
                     Name = request.Name,
                     Building = request.Building,
-                    Capacity = request.Capacity
+                    Capacity = request.Capacity,
+                    Room = request.Room
                 };
 
                 _context.Laboratories.Add(lab);
@@ -74,7 +77,8 @@ namespace ProjectLab.PucCampinas.Features.Laboratories.Service
                     Id = lab.Id,
                     Name = lab.Name,
                     Building = lab.Building,
-                    Capacity = lab.Capacity
+                    Capacity = lab.Capacity,
+                    Room = lab.Room
                 };
             }
             catch (Exception ex)
@@ -110,6 +114,7 @@ namespace ProjectLab.PucCampinas.Features.Laboratories.Service
                 lab.Name = request.Name;
                 lab.Building = request.Building;
                 lab.Capacity = request.Capacity;
+                lab.Room = request.Room;
 
                 _context.Laboratories.Update(lab);
                 await _context.SaveChangesAsync();
@@ -142,7 +147,8 @@ namespace ProjectLab.PucCampinas.Features.Laboratories.Service
                     Id = lab.Id,
                     Name = lab.Name,
                     Building = lab.Building,
-                    Capacity = lab.Capacity
+                    Capacity = lab.Capacity,
+                    Room = lab.Room
                 });
 
                 return await responseQuery.ToPaginatedResultAsync(filter.Page, filter.Size);

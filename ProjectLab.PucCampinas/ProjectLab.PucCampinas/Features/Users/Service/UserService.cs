@@ -66,11 +66,6 @@ namespace ProjectLab.PucCampinas.Features.Users.Service
                 var token = _authService.GenerateSetupToken(user);
                 var link = $"http://localhost:4200/setup-password?token={token}";
 
-                Console.WriteLine("\n\n==================================================");
-                Console.WriteLine("🚨 ATENÇÃO DEV! LINK PARA DEFINIR SENHA:");
-                Console.WriteLine(link);
-                Console.WriteLine("==================================================\n\n");
-
                 var emailData = new
                 {
                     name = user.Name,
