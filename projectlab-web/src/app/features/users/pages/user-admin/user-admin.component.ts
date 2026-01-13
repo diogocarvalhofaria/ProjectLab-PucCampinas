@@ -7,6 +7,7 @@ import { ModalWrapperComponent } from '../../../../shared/components/modal-wrapp
 import { UserService, SearchParams } from '../../services/user.service';
 import { UserResponse } from '../../models/user.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-user-admin',
@@ -25,9 +26,10 @@ export class UserAdminComponent implements OnInit {
   users: UserResponse[] = [];
   loading = false;
 
+  isAdmin = false;
+
   showModal = false;
   selectedUser: UserResponse | null = null;
-
   showDeleteModal = false;
   userToDelete: UserResponse | null = null;
 
@@ -37,15 +39,19 @@ export class UserAdminComponent implements OnInit {
 
   keyword = '';
   selectedRole = '';
-
   currentPage = 1;
   totalPages = 1;
   hasNext = false;
   hasPrevious = false;
 
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
+    this.isAdmin = this.authService.isAdmin();
+
     this.fetchUsers();
   }
 
@@ -121,7 +127,12 @@ export class UserAdminComponent implements OnInit {
           this.fetchUsers();
           this.closeDeleteModal();
         },
-        error: (err) => console.error('Erro ao deletar', err),
+        error: (err: HttpErrorResponse) => {
+          console.error('Erro ao deletar', err);
+          if (err.status === 403) {
+            alert('Você não tem permissão para excluir usuários.');
+          }
+        },
       });
     }
   }

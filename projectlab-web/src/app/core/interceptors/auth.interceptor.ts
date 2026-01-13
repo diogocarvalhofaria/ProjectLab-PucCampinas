@@ -1,34 +1,52 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { catchError, throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  // TENTATIVA 1: Pega o 'auth_token'
+  const router = inject(Router);
+
   let token = localStorage.getItem('auth_token');
 
-  // TENTATIVA 2: Se não achar, tenta 'accessToken' (comum em alguns templates)
   if (!token) {
     token = localStorage.getItem('accessToken');
   }
 
-  // TENTATIVA 3: Se não achar, tenta pegar de dentro do 'user_data'
   if (!token) {
     const userData = localStorage.getItem('user_data');
     if (userData) {
-      const parsed = JSON.parse(userData);
-      token = parsed.token; // ou parsed.accessToken, verifique o json
+      try {
+        const parsed = JSON.parse(userData);
+        token = parsed.token;
+      } catch (e) {
+        console.error('Erro ao ler user_data', e);
+      }
     }
   }
 
-  // DEBUG: Isso vai aparecer no console do navegador (F12)
-  console.log('🔍 Interceptor rodando! Token encontrado:', token);
+  const authReq = token
+    ? req.clone({
+        setHeaders: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+    : req;
 
-  if (token) {
-    const cloned = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return next(cloned);
-  }
+  return next(authReq).pipe(
+    catchError((error: HttpErrorResponse) => {
+      if (error.status === 401) {
+        console.warn(
+          '⚠️ Token expirado ou inválido (401). Realizando logout...'
+        );
 
-  return next(req);
+        localStorage.clear();
+
+        alert('Sua sessão expirou. Por favor, faça login novamente.');
+
+        router.navigate(['/login']);
+      }
+
+      return throwError(() => error);
+    })
+  );
 };

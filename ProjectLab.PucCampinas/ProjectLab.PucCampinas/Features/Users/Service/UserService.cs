@@ -82,6 +82,7 @@ namespace ProjectLab.PucCampinas.Features.Users.Service
                     Email = user.Email,
                     Role = user.Role,
                     PhoneNumber = user.PhoneNumber,
+                    Ra = user.Ra,
                     Cep = user.Cep,
                     Logradouro = user.Logradouro,
                     Bairro = user.Bairro,
@@ -110,6 +111,7 @@ namespace ProjectLab.PucCampinas.Features.Users.Service
                     Email = user.Email,
                     Role = user.Role,
                     PhoneNumber = user.PhoneNumber,
+                    Ra = user.Ra,
                     Cep = user.Cep,
                     Logradouro = user.Logradouro,
                     Bairro = user.Bairro,
@@ -174,7 +176,8 @@ namespace ProjectLab.PucCampinas.Features.Users.Service
                 {
                     query = query.Where(u => u.Name.Contains(filter.Keyword) ||
                                              u.Email.Contains(filter.Keyword) ||
-                                             u.PhoneNumber.Contains(filter.Keyword));
+                                             u.PhoneNumber.Contains(filter.Keyword) ||
+                                             u.Ra.Contains(filter.Keyword));
                 }
 
                 query = filter.Order.ToUpper() == "ASC"
@@ -188,6 +191,7 @@ namespace ProjectLab.PucCampinas.Features.Users.Service
                     Email = u.Email,
                     Role = u.Role,
                     PhoneNumber = u.PhoneNumber,
+                    Ra = u.Ra,
                     Cep = u.Cep,
                     Logradouro = u.Logradouro,
                     Bairro = u.Bairro,

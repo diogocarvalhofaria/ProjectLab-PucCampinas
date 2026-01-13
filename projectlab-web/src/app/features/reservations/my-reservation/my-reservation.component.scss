@@ -104,17 +104,37 @@ $success-green: #27ae60;
     }
   }
 
-.card-content {
+  .card-content {
     padding: 20px;
     flex: 1;
 
     h3 {
-      margin: 0 0 15px 0;
+      margin: 0 0 10px 0;
       color: $puc-blue;
       font-size: 18px;
       font-weight: 700;
       line-height: 1.4;
     }
+
+    // --- ESTILO DA SALA (NOVO) ---
+    .room-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 15px;
+      color: $text-muted;
+      font-size: 14px;
+
+      svg {
+        color: #999;
+        flex-shrink: 0;
+      }
+
+      strong {
+        color: $text-dark;
+      }
+    }
+    // ----------------------------
 
     .time-row {
       display: flex;
@@ -184,7 +204,6 @@ $success-green: #27ae60;
   text-align: center;
   padding: 60px 0;
   
-  .icon-empty { font-size: 40px; margin-bottom: 15px; display: block; opacity: 0.5; }
   h3 { color: $puc-blue; margin-bottom: 5px; font-size: 20px; }
   p { color: $text-muted; margin-bottom: 20px; }
   

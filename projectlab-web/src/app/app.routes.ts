@@ -8,20 +8,38 @@ import { SetupPasswordComponent } from './features/auth/setup-password/setup-pas
 import { MyReservationComponent } from './features/reservations/my-reservation/my-reservation.component';
 import { ReservationAdminComponent } from './features/reservations/pages/reservation-admin/reservation-admin.component';
 import { LaboratoryAdminComponent } from './features/laboratories/pages/laboratory-admin/laboratory-admin.component';
+import { authGuard } from './core/guards/auth.guard';
+import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
+  // Rotas Públicas
   { path: 'login', component: LoginComponent },
   { path: 'setup-password', component: SetupPasswordComponent },
+
   {
     path: '',
     component: MainLayoutComponent,
+    canActivate: [authGuard],
     children: [
+      // Acessível para Alunos e Admins
       { path: '', component: HomeComponent },
       { path: 'laboratories', component: LaboratoryListComponent },
-      { path: 'admin/laboratories', component: LaboratoryAdminComponent },
       { path: 'my-reservations', component: MyReservationComponent },
-      { path: 'admin/reservations', component: ReservationAdminComponent },
-      { path: 'users', component: UserAdminComponent },
+      {
+        path: 'admin/laboratories',
+        component: LaboratoryAdminComponent,
+        canActivate: [adminGuard],
+      },
+      {
+        path: 'admin/reservations',
+        component: ReservationAdminComponent,
+        canActivate: [adminGuard],
+      },
+      {
+        path: 'users',
+        component: UserAdminComponent,
+        canActivate: [adminGuard],
+      },
     ],
   },
   { path: '**', redirectTo: '' },

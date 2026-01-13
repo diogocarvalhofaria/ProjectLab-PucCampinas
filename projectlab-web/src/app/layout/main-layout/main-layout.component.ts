@@ -16,10 +16,7 @@ export class MainLayoutComponent implements OnInit {
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
-    const user = this.authService.getCurrentUser();
-    if (user && user.role === 'Admin') {
-      this.isAdmin = true;
-    }
+    this.isAdmin = this.authService.isAdmin();
   }
 
   logout() {

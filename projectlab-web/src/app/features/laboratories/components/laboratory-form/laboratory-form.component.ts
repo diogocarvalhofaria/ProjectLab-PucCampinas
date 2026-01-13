@@ -38,6 +38,7 @@ export class LaboratoryFormComponent implements OnChanges {
     this.form = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       building: ['', Validators.required],
+      room: ['', Validators.required],
       capacity: [null, [Validators.required, Validators.min(1)]],
     });
   }
@@ -50,6 +51,7 @@ export class LaboratoryFormComponent implements OnChanges {
       this.form.patchValue({
         name: this.labData.name,
         building: this.labData.building,
+        room: this.labData.room,
         capacity: this.labData.capacity,
       });
     } else {
@@ -81,6 +83,8 @@ export class LaboratoryFormComponent implements OnChanges {
           alert('Erro ao salvar: ' + (err.error?.message || err.message));
         },
       });
+    } else {
+      this.form.markAllAsTouched();
     }
   }
 

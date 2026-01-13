@@ -10,6 +10,7 @@ import { LaboratoryResponse } from '../../models/laboratory.model';
 import { LabCardComponent } from '../../../../shared/components/lab-card/lab-card.component';
 import { ModalWrapperComponent } from '../../../../shared/components/modal-wrapper/modal-wrapper.component';
 import { ReservationFormComponent } from '../../../reservations/components/reservation-form.component';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-laboratory-list',
@@ -40,9 +41,16 @@ export class LaboratoryListComponent implements OnInit {
   keyword = '';
   selectedBuilding = '';
 
-  constructor(private readonly laboratoryService: LaboratoryService) {}
+  isAdmin = false;
+
+  constructor(
+    private readonly laboratoryService: LaboratoryService,
+    private readonly authService: AuthService
+  ) {}
 
   ngOnInit(): void {
+    this.isAdmin = this.authService.isAdmin();
+
     this.fetchLaboratories();
   }
 
@@ -59,12 +67,10 @@ export class LaboratoryListComponent implements OnInit {
     this.laboratoryService.findAll(params).subscribe({
       next: (response) => {
         this.laboratories = response.results;
-
         this.currentPage = response.currentPage;
         this.totalPages = response.totalPages;
         this.hasNext = response.nextPage;
         this.hasPrevious = response.previousPage;
-
         this.loading = false;
       },
       error: (err: HttpErrorResponse) => {

@@ -2,6 +2,7 @@ export interface LaboratoryResponse {
   id: string;
   name: string;
   building: string;
+  room: string;
   capacity: number;
 }
 
@@ -9,6 +10,7 @@ export interface LaboratoryRequest {
   name: string;
   building: string;
   capacity: number;
+  room: string;
 }
 
 export interface PaginatedResult<T> {

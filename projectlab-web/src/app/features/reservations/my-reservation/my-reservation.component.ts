@@ -28,18 +28,8 @@ export class MyReservationComponent implements OnInit {
 
   fetchReservations() {
     this.loading = true;
-    const userDataString = localStorage.getItem('user_data');
 
-    if (!userDataString) {
-      console.error('Usuário não identificado no LocalStorage.');
-      this.loading = false;
-      return;
-    }
-
-    const userData = JSON.parse(userDataString);
-    const userId = userData.id;
-
-    this.reservationService.getMyReservations(userId).subscribe({
+    this.reservationService.getMyReservations().subscribe({
       next: (data) => {
         this.reservations = data || [];
         this.loading = false;
@@ -71,7 +61,15 @@ export class MyReservationComponent implements OnInit {
         },
         error: (err: HttpErrorResponse) => {
           console.error(err);
-          const msg = err.error || 'Erro ao cancelar reserva.';
+
+          let msg = 'Erro ao cancelar reserva.';
+
+          if (err.status === 403) {
+            msg = 'Você não tem permissão para cancelar esta reserva.';
+          } else if (err.error && typeof err.error === 'string') {
+            msg = err.error;
+          }
+
           alert(msg);
           this.closeCancelModal();
         },

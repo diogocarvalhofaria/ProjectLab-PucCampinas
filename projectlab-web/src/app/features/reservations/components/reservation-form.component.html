@@ -1,79 +1,80 @@
-<div class="modal-overlay">
-  <div class="modal-container">
-    <div class="form-container">
-      <h2>
-        Nova Reserva
-        <button type="button" class="close-btn" (click)="onCancel()">×</button>
-      </h2>
-
-      <form [formGroup]="form" (ngSubmit)="onSubmit()">
-        <div class="input-group">
-          <label class="label">Laboratório</label>
-          <input
-            type="text"
-            [value]="laboratoryName"
-            class="input-field readonly"
-            readonly
-            disabled
-          />
-        </div>
-
-        <h4 class="section-title">Detalhes</h4>
-
-        <div class="input-group">
-          <label class="label">Data da Reserva</label>
-          <input
-            type="date"
-            formControlName="reservationDate"
-            class="input-field"
-          />
-        </div>
-
-        <div class="occupied-warning" *ngIf="occupiedSlots.length > 0">
-          <strong>Horários Indisponíveis:</strong>
-          <div class="slots-list">
-            <span class="slot-badge" *ngFor="let slot of occupiedSlots">
-              {{ slot.startTime }} - {{ slot.endTime }}
-            </span>
-          </div>
-        </div>
-
-        <div class="grid-time">
-          <div>
-            <label class="label">Início</label>
-            <select formControlName="startTime" class="input-field bg-white">
-              <option value="" disabled selected>Selecione...</option>
-              <option *ngFor="let time of timeOptions" [value]="time">
-                {{ time }}
-              </option>
-            </select>
-          </div>
-
-          <div>
-            <label class="label">Fim</label>
-            <select formControlName="endTime" class="input-field bg-white">
-              <option value="" disabled selected>Selecione...</option>
-              <option *ngFor="let time of timeOptions" [value]="time">
-                {{ time }}
-              </option>
-            </select>
-          </div>
-        </div>
-
-        <div class="actions-row">
-          <button type="button" class="btn-cancel" (click)="onCancel()">
-            Cancelar
-          </button>
-
-          <button
-            type="submit"
-            class="btn-submit"
-            [disabled]="form.invalid || loading"
-          >
-            {{ loading ? "Salvando..." : "Confirmar Reserva" }}
-          </button>
-        </div>
-      </form>
+<div class="form-content">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label>Laboratório</label>
+      <input
+        type="text"
+        [value]="laboratoryName"
+        class="input-field readonly"
+        readonly
+        disabled
+      />
     </div>
-  </div>
+
+    <div class="divider">Detalhes da Reserva</div>
+
+    <div class="form-group">
+      <label>Data</label>
+      <input
+        type="date"
+        formControlName="reservationDate"
+        class="input-field"
+      />
+    </div>
+
+    <div class="occupied-warning" *ngIf="occupiedSlots.length > 0">
+      <strong>Horários já ocupados:</strong>
+      <div class="slots-list">
+        <span class="slot-badge" *ngFor="let slot of occupiedSlots">
+          {{ slot.startTime }} - {{ slot.endTime }}
+        </span>
+      </div>
+    </div>
+
+    <div class="time-grid">
+      <div class="form-group">
+        <label>Início</label>
+        <select formControlName="startTime" class="input-field">
+          <option value="" disabled selected>Selecione...</option>
+          <option *ngFor="let time of timeOptions" [value]="time">
+            {{ time }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Fim</label>
+        <select formControlName="endTime" class="input-field">
+          <option value="" disabled selected>Selecione...</option>
+          <option *ngFor="let time of timeOptions" [value]="time">
+            {{ time }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn-cancel" (click)="onCancel()">
+        Cancelar
+      </button>
+
+      <button
+        type="submit"
+        class="btn-submit"
+        [disabled]="form.invalid || loading"
+      >
+        {{ loading ? "Salvando..." : "Confirmar Reserva" }}
+      </button>
+    </div>
+  </form>
 </div>
+
+<app-confirmation-modal
+  *ngIf="showConfirmationModal"
+  title="Confirmar Agendamento"
+  [message]="confirmationMessage"
+  confirmButtonText="Sim, Reservar"
+  (confirm)="confirmSave()"
+  (cancel)="closeConfirmationModal()"
+>
+</app-confirmation-modal>

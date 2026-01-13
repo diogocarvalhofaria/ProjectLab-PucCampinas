@@ -49,8 +49,7 @@ export class LaboratoryAdminComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const user = this.authService.getCurrentUser();
-    this.isAdmin = user?.role === 'Admin';
+    this.isAdmin = this.authService.isAdmin();
 
     this.fetchLaboratories();
   }

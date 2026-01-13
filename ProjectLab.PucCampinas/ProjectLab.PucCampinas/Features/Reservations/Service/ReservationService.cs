@@ -60,7 +60,7 @@ namespace ProjectLab.PucCampinas.Features.Reservations.Service
             }
         }
 
-        public async Task<ReservationResponse?> GetReservationById(Guid id)
+        public async Task<ReservationResponse?> GetReservationById(Guid id, Guid currentUserId, bool isAdmin)
         {
             try
             {
@@ -70,6 +70,11 @@ namespace ProjectLab.PucCampinas.Features.Reservations.Service
                     .FirstOrDefaultAsync(x => x.Id == id);
 
                 if (r == null) return null;
+
+                if (!isAdmin && r.UserId != currentUserId)
+                {
+                    throw new UnauthorizedAccessException("Acesso negado aos detalhes desta reserva.");
+                }
 
                 return new ReservationResponse
                 {
@@ -103,12 +108,17 @@ namespace ProjectLab.PucCampinas.Features.Reservations.Service
             }
         }
 
-        public async Task UpdateReservation(Guid id, ReservationRequest request)
+        public async Task UpdateReservation(Guid id, ReservationRequest request, Guid currentUserId, bool isAdmin)
         {
             try
             {
                 var reservation = await _context.Reservations.FirstOrDefaultAsync(r => r.Id == id);
                 if (reservation == null) throw new Exception("Reserva não encontrada");
+
+                if (!isAdmin && reservation.UserId != currentUserId)
+                {
+                    throw new UnauthorizedAccessException("Você não pode editar uma reserva que não é sua.");
+                }
 
                 reservation.UserId = request.UserId;
                 reservation.LaboratoryId = request.LaboratoryId;
@@ -212,7 +222,7 @@ namespace ProjectLab.PucCampinas.Features.Reservations.Service
             }
         }
 
-        public async Task CancelReservation(Guid id)
+        public async Task CancelReservation(Guid id, Guid currentUserId, bool isAdmin)
         {
             try
             {
@@ -223,6 +233,11 @@ namespace ProjectLab.PucCampinas.Features.Reservations.Service
 
                 if (reservation.ReservationDate < DateTime.Today)
                     throw new Exception("Não é possível cancelar reservas passadas.");
+
+                if (!isAdmin && reservation.UserId != currentUserId)
+                {
+                    throw new UnauthorizedAccessException("Você não pode cancelar a reserva de outra pessoa.");
+                }
 
                 reservation.Status = ReservationStatus.Cancelled;
                 reservation.UpdatedAt = DateTime.Now;

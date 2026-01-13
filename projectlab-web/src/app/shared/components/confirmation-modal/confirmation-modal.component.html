@@ -21,7 +21,8 @@
     </div>
 
     <h3 class="modal-title">{{ title }}</h3>
-    <p class="modal-message">{{ message }}</p>
+
+    <p class="modal-message" [innerHTML]="message"></p>
 
     <div class="modal-actions">
       <button class="btn btn-cancel" (click)="onCancel()">Cancelar</button>

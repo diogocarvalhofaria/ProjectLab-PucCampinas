@@ -16,6 +16,7 @@ export interface ReservationResponse {
   laboratoryId: string;
   laboratoryName: string;
   status: string;
+  room?: string;
 }
 
 export interface ReservedTime {

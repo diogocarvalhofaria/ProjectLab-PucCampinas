@@ -2,7 +2,8 @@ $puc-blue: #003B71;
 $danger-red: #dc3545;
 $success-green: #27ae60;
 
-// --- Tela de Sucesso ---
+// ... (Seu código existente da success-state) ...
+
 .success-state {
   display: flex;
   flex-direction: column;
@@ -41,6 +42,16 @@ $success-green: #27ae60;
 // --- Formulário ---
 .form-container {
   padding: 10px 0;
+}
+
+// ADICIONE ISSO AQUI PARA O LAYOUT LADO A LADO
+.form-row {
+  display: flex;
+  gap: 15px;
+  
+  .half {
+    flex: 1; // Faz os inputs ocuparem 50% cada
+  }
 }
 
 .form-group {

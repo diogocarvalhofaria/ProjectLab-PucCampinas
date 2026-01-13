@@ -2,8 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ReservationService } from '../../service/reservation.service';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-reservation-admin',
@@ -23,10 +25,14 @@ export class ReservationAdminComponent implements OnInit {
 
   showCancelModal = false;
   selectedReservation: any = null;
+  isAdmin = false;
 
   private searchSubject = new Subject<string>();
 
-  constructor(private reservationService: ReservationService) {
+  constructor(
+    private reservationService: ReservationService,
+    private authService: AuthService
+  ) {
     this.searchSubject
       .pipe(debounceTime(500), distinctUntilChanged())
       .subscribe((term) => {
@@ -36,6 +42,8 @@ export class ReservationAdminComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.isAdmin = this.authService.isAdmin();
+
     this.loadReservations();
   }
 
@@ -76,7 +84,15 @@ export class ReservationAdminComponent implements OnInit {
           this.loadReservations(this.currentPage);
           this.closeCancelModal();
         },
-        error: (err) => console.error('Erro ao cancelar', err),
+        error: (err: HttpErrorResponse) => {
+          console.error('Erro ao cancelar', err);
+          if (err.status === 403) {
+            alert('Ação negada pelo servidor. Verifique suas credenciais.');
+          } else {
+            alert('Erro ao cancelar reserva.');
+          }
+          this.closeCancelModal();
+        },
       });
     }
   }

@@ -6,20 +6,20 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { ReservationService } from '../service/reservation.service';
-import { ReservationRequest } from '../model/reservation.model';
 import { AuthService } from '../../../core/services/auth.service';
-import { ReservedTime } from '../model/reservation.model';
 
 @Component({
   selector: 'app-reservation-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ConfirmationModalComponent],
   templateUrl: './reservation-form.component.html',
   styleUrls: ['./reservation-form.component.scss'],
 })
 export class ReservationFormComponent implements OnInit {
-  @Input() laboratoryId!: string;
+  @Input() laboratoryId: string = '';
   @Input() laboratoryName: string = '';
   @Output() saved = new EventEmitter<void>();
   @Output() cancelled = new EventEmitter<void>();
@@ -27,9 +27,29 @@ export class ReservationFormComponent implements OnInit {
   form: FormGroup;
   loading = false;
 
-  occupiedSlots: ReservedTime[] = [];
+  occupiedSlots: any[] = [];
 
-  timeOptions: string[] = [];
+  timeOptions: string[] = [
+    '08:00',
+    '09:00',
+    '10:00',
+    '11:00',
+    '12:00',
+    '13:00',
+    '14:00',
+    '15:00',
+    '16:00',
+    '17:00',
+    '18:00',
+    '19:00',
+    '20:00',
+    '21:00',
+    '22:00',
+    '23:00',
+  ];
+
+  showConfirmationModal = false;
+  confirmationMessage = '';
 
   constructor(
     private fb: FormBuilder,
@@ -44,111 +64,156 @@ export class ReservationFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.generateTimeOptions();
-
-    this.form.get('reservationDate')?.valueChanges.subscribe((date) => {
-      if (date && this.laboratoryId) {
-        this.fetchOccupiedSlots(date);
+    this.form.get('reservationDate')?.valueChanges.subscribe((dateValue) => {
+      if (dateValue && this.laboratoryId) {
+        this.loadOccupiedSlots(dateValue);
+      } else {
+        this.occupiedSlots = [];
       }
     });
   }
 
-  generateTimeOptions() {
-    const startHour = 7;
-    const endHour = 22;
-
-    for (let h = startHour; h <= endHour; h++) {
-      const hourStr = h.toString().padStart(2, '0');
-      this.timeOptions.push(`${hourStr}:00`);
-      this.timeOptions.push(`${hourStr}:30`);
+  loadOccupiedSlots(dateVal: string | Date) {
+    let dateStr = '';
+    if (dateVal instanceof Date) {
+      dateStr = dateVal.toISOString().split('T')[0];
+    } else {
+      dateStr = dateVal;
     }
-  }
 
-  fetchOccupiedSlots(date: string) {
-    this.loading = true;
     this.reservationService
-      .getReservedTimes(this.laboratoryId, date)
+      .getReservedTimes(this.laboratoryId, dateStr)
       .subscribe({
-        next: (slots) => {
-          this.occupiedSlots = slots;
-          this.loading = false;
+        next: (data) => {
+          console.log('Horários ocupados recebidos do backend:', data);
+
+          this.occupiedSlots = data.map((slot: any) => ({
+            startTime: this.formatTime(slot.startTime || slot.StartTime),
+            endTime: this.formatTime(slot.endTime || slot.EndTime),
+          }));
         },
-        error: (err) => {
-          console.error('Erro ao buscar horários', err);
-          this.loading = false;
-        },
+        error: (err) => console.error('Erro ao buscar horários ocupados', err),
       });
   }
 
-  hasConflict(): boolean {
-    const start = this.form.get('startTime')?.value;
-    const end = this.form.get('endTime')?.value;
+  formatTime(value: string): string {
+    if (!value) return '';
 
-    if (!start || !end || this.occupiedSlots.length === 0) return false;
+    if (value.includes(':') && !value.includes('-') && !value.includes('/')) {
+      return value.substring(0, 5);
+    }
 
-    return this.occupiedSlots.some((slot) => {
-      return start < slot.endTime && end > slot.startTime;
+    const date = new Date(value);
+
+    if (!isNaN(date.getTime())) {
+      return date.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    }
+
+    if (value.includes(' ')) {
+      const parts = value.split(' ');
+      if (parts.length > 1) {
+        return parts[1].substring(0, 5);
+      }
+    }
+
+    return value.substring(0, 5);
+  }
+  onSubmit() {
+    if (this.form.valid) {
+      const date = this.form.get('reservationDate')?.value;
+      const start = this.form.get('startTime')?.value;
+      const end = this.form.get('endTime')?.value;
+
+      if (start >= end) {
+        alert('O horário de início deve ser menor que o horário de fim.');
+        return;
+      }
+
+      const isConflict = this.occupiedSlots.some(
+        (slot) =>
+          (start >= slot.startTime && start < slot.endTime) ||
+          (end > slot.startTime && end <= slot.endTime) ||
+          (start <= slot.startTime && end >= slot.endTime)
+      );
+
+      if (isConflict) {
+        alert(
+          'Atenção: Este horário já está reservado (verifique a lista acima).'
+        );
+      }
+
+      const dateObj = new Date(date);
+      const dateStr = dateObj.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+
+      this.confirmationMessage = `Confirma a reserva no <strong>${this.laboratoryName}</strong> para o dia <strong>${dateStr}</strong> das <strong>${start}</strong> às <strong>${end}</strong>?`;
+
+      this.showConfirmationModal = true;
+    } else {
+      this.form.markAllAsTouched();
+    }
+  }
+
+  confirmSave() {
+    this.showConfirmationModal = false;
+    this.loading = true;
+
+    const userId = this.authService.getUserIdFromToken();
+
+    if (!userId) {
+      alert('Sessão inválida. Faça login novamente.');
+      this.loading = false;
+      return;
+    }
+
+    const rawDate = this.form.get('reservationDate')?.value;
+    let rawStart = this.form.get('startTime')?.value;
+    let rawEnd = this.form.get('endTime')?.value;
+
+    let dateStr = rawDate;
+    if (rawDate instanceof Date) {
+      dateStr = rawDate.toISOString().split('T')[0];
+    }
+
+    const fullStartTime = `${dateStr}T${rawStart}:00`;
+    const fullEndTime = `${dateStr}T${rawEnd}:00`;
+
+    const reservationData = {
+      userId: userId,
+      laboratoryId: this.laboratoryId,
+      reservationDate: dateStr,
+      startTime: fullStartTime,
+      endTime: fullEndTime,
+    };
+
+    this.reservationService.create(reservationData).subscribe({
+      next: () => {
+        this.loading = false;
+        this.saved.emit();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.loading = false;
+        console.error('Erro Backend:', err);
+
+        let msg = 'Erro ao reservar.';
+        if (err.error?.errors) {
+          const firstErrorKey = Object.keys(err.error.errors)[0];
+          msg += ` (${err.error.errors[firstErrorKey][0]})`;
+        } else if (err.error?.message) {
+          msg = err.error.message;
+        }
+        alert(msg);
+      },
     });
+  }
+
+  closeConfirmationModal() {
+    this.showConfirmationModal = false;
   }
 
   onCancel() {
     this.cancelled.emit();
-  }
-
-  onSubmit() {
-    if (this.form.valid) {
-      if (this.hasConflict()) {
-        alert(
-          'Este horário coincide com uma reserva já existente. Por favor, verifique a lista de horários indisponíveis.'
-        );
-        return;
-      }
-
-      const currentUser = this.authService.getCurrentUser();
-
-      if (!currentUser) {
-        alert('Sessão expirada. Por favor, faça login novamente.');
-        return;
-      }
-
-      this.loading = true;
-      const formVal = this.form.value;
-      const dateBase = formVal.reservationDate;
-
-      const startDateTime = new Date(
-        `${dateBase}T${formVal.startTime}:00`
-      ).toISOString();
-      const endDateTime = new Date(
-        `${dateBase}T${formVal.endTime}:00`
-      ).toISOString();
-      const reservationDate = new Date(`${dateBase}T00:00:00`).toISOString();
-
-      const request: ReservationRequest = {
-        userId: currentUser.id,
-        laboratoryId: this.laboratoryId,
-        reservationDate: reservationDate,
-        startTime: startDateTime,
-        endTime: endDateTime,
-      };
-
-      this.reservationService.create(request).subscribe({
-        next: () => {
-          this.loading = false;
-          alert('Reserva realizada com sucesso!');
-          this.saved.emit();
-        },
-        error: (err) => {
-          this.loading = false;
-          console.error(err);
-          const msg =
-            err.error?.detail ||
-            err.error?.message ||
-            'Erro desconhecido ao reservar.';
-          alert('Erro ao reservar: ' + msg);
-        },
-      });
-    } else {
-      this.form.markAllAsTouched();
-    }
   }
 }

@@ -11,6 +11,7 @@ import {
   providedIn: 'root',
 })
 export class ReservationService {
+  // Ajuste a porta se necessário (no seu log parecia ser 8000 ou 5198)
   private apiUrl = 'http://localhost:8000/api/Reservation';
 
   constructor(private http: HttpClient) {}
@@ -23,17 +24,16 @@ export class ReservationService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  getMyReservations(userId: string): Observable<ReservationResponse[]> {
-    const params = new HttpParams().set('userId', userId);
-
+  getMyReservations(): Observable<ReservationResponse[]> {
     return this.http.get<ReservationResponse[]>(
-      `${this.apiUrl}/my-reservations`,
-      { params }
+      `${this.apiUrl}/my-reservations`
     );
   }
+
   cancel(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}/cancel`);
   }
+
   getReservedTimes(
     laboratoryId: string,
     date: string

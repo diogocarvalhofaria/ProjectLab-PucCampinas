@@ -26,7 +26,7 @@
       </span>
       <input
         type="text"
-        placeholder="Buscar laboratório por nome, prédio ou equipamento..."
+        placeholder="Buscar laboratório por nome, bloco, sala ou equipamento..."
         (input)="onSearch($event)"
       />
     </div>
@@ -38,7 +38,7 @@
       *ngFor="let item of laboratories"
       (click)="openReservation(item)"
     >
-      <app-lab-card [lab]="item"></app-lab-card>
+      <app-lab-card [lab]="item"> </app-lab-card>
     </div>
   </div>
 
