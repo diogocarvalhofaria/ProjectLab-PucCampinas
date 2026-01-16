@@ -28,11 +28,12 @@ export class AuthService {
   private loadUserFromToken() {
     const token = localStorage.getItem('auth_token');
 
-    localStorage.removeItem('user_data');
-
     if (token) {
       try {
         const decoded: any = jwtDecode(token);
+
+        const savedDataStr = localStorage.getItem('user_data');
+        const savedData = savedDataStr ? JSON.parse(savedDataStr) : null;
 
         const user: UserPayload = {
           id: decoded.nameid || decoded.sub || '',
@@ -43,7 +44,7 @@ export class AuthService {
               'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
             ] ||
             '',
-          ra: decoded.ra || '',
+          ra: savedData?.ra || decoded.ra || '',
           token: token,
         };
 
@@ -62,7 +63,7 @@ export class AuthService {
         tap((response) => {
           localStorage.setItem('auth_token', response.token);
 
-          localStorage.removeItem('user_data');
+          localStorage.setItem('user_data', JSON.stringify(response));
 
           this.userSubject.next(response);
         })

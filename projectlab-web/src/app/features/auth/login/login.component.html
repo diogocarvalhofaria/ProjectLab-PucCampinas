@@ -33,10 +33,6 @@
         />
       </div>
 
-      <div *ngIf="errorMessage" class="alert-error">
-        {{ errorMessage }}
-      </div>
-
       <button type="submit" [disabled]="loginForm.invalid || isLoading">
         {{ isLoading ? "Entrando..." : "Entrar" }}
       </button>

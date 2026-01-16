@@ -1,24 +1,4 @@
-<div class="success-state" *ngIf="showSuccess">
-  <div class="icon-circle">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="48"
-      height="48"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
-      <polyline points="20 6 9 17 4 12"></polyline>
-    </svg>
-  </div>
-  <h3>Salvo com Sucesso!</h3>
-  <p>Os dados foram registrados.</p>
-</div>
-
-<div class="form-container" *ngIf="!showSuccess">
+<div class="form-container">
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
     <div class="form-group">
       <label>Nome do Laboratório:</label>

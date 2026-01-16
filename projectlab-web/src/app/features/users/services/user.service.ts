@@ -43,6 +43,7 @@ export class UserService {
       { params }
     );
   }
+
   create(user: UserRequest): Observable<void> {
     return this.http.post<void>(this.apiUrl, user);
   }
@@ -60,5 +61,9 @@ export class UserService {
     return this.http.get<EnderecoViaCep>(
       `${this.apiUrl}/consult-cep/${cepLimpo}`
     );
+  }
+
+  resendEmail(id: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${id}/resend-email`, {});
   }
 }

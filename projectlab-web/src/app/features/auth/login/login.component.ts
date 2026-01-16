@@ -8,6 +8,7 @@ import {
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -18,13 +19,13 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class LoginComponent {
   loginForm: FormGroup;
-  errorMessage = '';
   isLoading = false;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private toast: ToastService
   ) {
     this.loginForm = this.fb.group({
       ra: ['', [Validators.required]],
@@ -33,23 +34,28 @@ export class LoginComponent {
   }
 
   onSubmit() {
-    if (this.loginForm.invalid) return;
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      this.toast.warning('Por favor, preencha todos os campos.');
+      return;
+    }
 
     this.isLoading = true;
-    this.errorMessage = '';
 
     const { ra, password } = this.loginForm.value;
 
     this.authService.login(ra, password).subscribe({
       next: () => {
+        this.toast.success('Login realizado com sucesso!');
         this.router.navigate(['/']);
       },
       error: (err) => {
         this.isLoading = false;
+
         if (err.status === 401) {
-          this.errorMessage = 'RA ou senha incorretos.';
+          this.toast.error('RA ou senha incorretos.');
         } else {
-          this.errorMessage = 'Erro de conexão com o servidor.';
+          this.toast.error('Erro de conexão com o servidor.');
         }
       },
     });

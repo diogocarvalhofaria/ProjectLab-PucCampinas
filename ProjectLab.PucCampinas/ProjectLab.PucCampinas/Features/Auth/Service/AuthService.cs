@@ -39,7 +39,12 @@ namespace ProjectLab.PucCampinas.Features.Auth.Service
                 if (user == null)
                     throw new Exception("Usuário ou senha inválidos.");
 
-                if (user.PasswordHash != request.Password)
+                if (!user.IsActive)
+                    throw new Exception("Este usuário ainda não ativou a conta. Verifique seu e-mail para criar a senha.");
+
+                bool passwordIsValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
+
+                if (!passwordIsValid)
                     throw new Exception("Usuário ou senha inválidos.");
 
                 var token = GenerateJwtToken(user);
@@ -62,15 +67,25 @@ namespace ProjectLab.PucCampinas.Features.Auth.Service
 
         public async Task SetPassword(string ra, string newPassword)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Ra == ra);
+            try
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Ra == ra);
 
-            if (user == null)
-                throw new Exception("Usuário não encontrado.");
+                if (user == null)
+                    throw new Exception("Usuário não encontrado.");
 
-            user.PasswordHash = newPassword;
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
 
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+                user.IsActive = true;
+
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                OnError(ex, 500);
+                throw;
+            }
         }
 
         private string GenerateJwtToken(User user)

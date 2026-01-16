@@ -1,76 +1,44 @@
-<div
-  style="
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 20px;
-    background: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  "
->
-  <div
-    style="
-      display: flex;
-      justify-content: space-between;
-      align-items: start;
-      margin-bottom: 10px;
-    "
-  >
-    <h3 style="margin: 0; color: #333; font-size: 18px">{{ user.name }}</h3>
-    <span
-      [style.background]="getRoleColor(user.role)"
-      style="
-        color: white;
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: bold;
-      "
-    >
+<div class="user-card">
+  <div class="card-header">
+    <div class="user-info-wrapper">
+      <h3>{{ user.name }}</h3>
+
+      <span
+        class="badge"
+        [ngClass]="user.isActive ? 'status-active' : 'status-pending'"
+      >
+        {{ user.isActive ? "Ativo" : "Pendente" }}
+      </span>
+    </div>
+
+    <span class="badge role-badge" [style.background]="getRoleColor(user.role)">
       {{ user.role }}
     </span>
   </div>
 
-  <div style="flex: 1; color: #666; font-size: 14px">
-    <p style="margin: 5px 0">📧 {{ user.email }}</p>
-    <p style="margin: 5px 0">📱 {{ user.phoneNumber }}</p>
-    <p style="margin: 5px 0; font-size: 12px">
-      {{ user.cidade }} - {{ user.estado }}
+  <div class="card-body">
+    <p>{{ user.email }}</p>
+    <p>{{ user.phoneNumber }}</p>
+
+    <p class="detail-text">{{ user.cidade }} - {{ user.estado }}</p>
+
+    <p class="ra-text">
+      RA: <strong>{{ user.ra }}</strong>
     </p>
   </div>
 
-  <div *ngIf="isAdmin" style="display: flex; gap: 10px; margin-top: 20px">
+  <div class="card-actions" *ngIf="isAdmin">
     <button
-      (click)="onEdit()"
-      style="
-        flex: 1;
-        background: #f39c12;
-        color: white;
-        border: none;
-        padding: 8px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: bold;
-      "
+      *ngIf="!user.isActive"
+      class="btn-email"
+      (click)="onResendEmail()"
+      title="Reenviar E-mail de Acesso"
     >
-      Editar
+      Reenviar E-mail
     </button>
-    <button
-      (click)="onDelete()"
-      style="
-        flex: 1;
-        background: #dc3545;
-        color: white;
-        border: none;
-        padding: 8px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: bold;
-      "
-    >
-      Excluir
-    </button>
+
+    <button class="btn-edit" (click)="onEdit()">Editar</button>
+
+    <button class="btn-delete" (click)="onDelete()">Excluir</button>
   </div>
 </div>

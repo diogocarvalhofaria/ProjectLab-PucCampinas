@@ -7,6 +7,7 @@ import { UserResponse } from '../../models/user.model';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './user-card.component.html',
+  styleUrls: ['./user-card.component.scss'],
 })
 export class UserCardComponent {
   @Input() user!: UserResponse;
@@ -14,6 +15,7 @@ export class UserCardComponent {
 
   @Output() editRequest = new EventEmitter<UserResponse>();
   @Output() deleteRequest = new EventEmitter<string>();
+  @Output() resendEmailRequest = new EventEmitter<UserResponse>();
 
   onEdit() {
     this.editRequest.emit(this.user);
@@ -21,6 +23,10 @@ export class UserCardComponent {
 
   onDelete() {
     this.deleteRequest.emit(this.user.id);
+  }
+
+  onResendEmail() {
+    this.resendEmailRequest.emit(this.user);
   }
 
   getRoleColor(role: string): string {

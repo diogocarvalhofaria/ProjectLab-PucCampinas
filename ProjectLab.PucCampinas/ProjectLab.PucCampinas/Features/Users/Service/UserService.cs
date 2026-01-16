@@ -116,7 +116,8 @@ namespace ProjectLab.PucCampinas.Features.Users.Service
                     Logradouro = user.Logradouro,
                     Bairro = user.Bairro,
                     Cidade = user.Cidade,
-                    Estado = user.Estado
+                    Estado = user.Estado,
+                    IsActive = user.IsActive
                 };
             }
             catch (Exception ex)
@@ -196,7 +197,8 @@ namespace ProjectLab.PucCampinas.Features.Users.Service
                     Logradouro = u.Logradouro,
                     Bairro = u.Bairro,
                     Cidade = u.Cidade,
-                    Estado = u.Estado
+                    Estado = u.Estado,
+                    IsActive = u.IsActive
                 });
 
                 return await responseQuery.ToPaginatedResultAsync(filter.Page, filter.Size);
@@ -207,6 +209,38 @@ namespace ProjectLab.PucCampinas.Features.Users.Service
                 throw;
             }
 
+        }
+
+        public async Task ResendEmail(Guid id)
+        {
+            try
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+
+                if (user == null)
+                    throw new Exception("Usuário não encontrado.");
+
+                if (user.IsActive)
+                    throw new Exception("Este usuário já está ativo e possui senha definida.");
+
+                var token = _authService.GenerateSetupToken(user);
+
+                var link = $"http://localhost:4200/setup-password?token={token}";
+
+                var emailData = new
+                {
+                    name = user.Name,
+                    ra = user.Ra,
+                    link = link
+                };
+
+                await _emailService.SendTemplateEmail(user.Email, "Defina sua Senha (Reenvio)", "Login", emailData);
+            }
+            catch (Exception ex)
+            {
+                OnError(ex, 500);
+                throw;
+            }
         }
     }
 

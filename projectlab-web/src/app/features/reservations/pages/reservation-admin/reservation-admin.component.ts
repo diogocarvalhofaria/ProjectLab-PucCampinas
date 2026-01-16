@@ -6,6 +6,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ReservationService } from '../../service/reservation.service';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { AuthService } from '../../../../core/services/auth.service';
+import { ToastService } from '../../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-reservation-admin',
@@ -21,7 +22,9 @@ export class ReservationAdminComponent implements OnInit {
   totalCount = 0;
   hasNext = false;
   hasPrevious = false;
+
   searchTerm: string = '';
+  selectedDate: string | null = null;
 
   showCancelModal = false;
   selectedReservation: any = null;
@@ -31,7 +34,8 @@ export class ReservationAdminComponent implements OnInit {
 
   constructor(
     private reservationService: ReservationService,
-    private authService: AuthService
+    private authService: AuthService,
+    private toast: ToastService
   ) {
     this.searchSubject
       .pipe(debounceTime(500), distinctUntilChanged())
@@ -43,13 +47,12 @@ export class ReservationAdminComponent implements OnInit {
 
   ngOnInit(): void {
     this.isAdmin = this.authService.isAdmin();
-
     this.loadReservations();
   }
 
   loadReservations(page: number = 1) {
     this.reservationService
-      .searchReservations(this.searchTerm, page, 10)
+      .searchReservations(this.searchTerm, this.selectedDate, page, 10)
       .subscribe({
         next: (response) => {
           this.reservations = response.results;
@@ -59,7 +62,10 @@ export class ReservationAdminComponent implements OnInit {
           this.hasNext = response.nextPage;
           this.hasPrevious = response.previousPage;
         },
-        error: (err) => console.error('Erro ao carregar relatório', err),
+        error: (err) => {
+          console.error('Erro ao carregar relatório', err);
+          this.toast.error('Erro ao carregar a lista de reservas.');
+        },
       });
   }
 
@@ -68,8 +74,11 @@ export class ReservationAdminComponent implements OnInit {
   }
 
   onDateChange(event: any) {
-    const selectedDate = event.target.value;
-    console.log('Filtrando por data:', selectedDate);
+    const rawDate = event.target.value;
+    this.selectedDate = rawDate || null;
+
+    console.log('Filtrando por data:', this.selectedDate);
+    this.loadReservations(1);
   }
 
   openCancelModal(res: any) {
@@ -81,15 +90,21 @@ export class ReservationAdminComponent implements OnInit {
     if (this.selectedReservation) {
       this.reservationService.cancel(this.selectedReservation.id).subscribe({
         next: () => {
+          this.toast.success('Reserva cancelada com sucesso!');
+
           this.loadReservations(this.currentPage);
           this.closeCancelModal();
         },
         error: (err: HttpErrorResponse) => {
           console.error('Erro ao cancelar', err);
+
           if (err.status === 403) {
-            alert('Ação negada pelo servidor. Verifique suas credenciais.');
+            this.toast.warning(
+              'Ação negada. Você não tem permissão para isso.'
+            );
           } else {
-            alert('Erro ao cancelar reserva.');
+            const msg = err.error?.message || 'Erro ao cancelar reserva.';
+            this.toast.error(msg);
           }
           this.closeCancelModal();
         },
@@ -105,6 +120,7 @@ export class ReservationAdminComponent implements OnInit {
   nextPage() {
     if (this.hasNext) this.loadReservations(this.currentPage + 1);
   }
+
   prevPage() {
     if (this.hasPrevious) this.loadReservations(this.currentPage - 1);
   }

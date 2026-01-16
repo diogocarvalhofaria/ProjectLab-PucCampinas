@@ -49,13 +49,18 @@ export class ReservationService {
 
   searchReservations(
     keyword: string = '',
+    date: string | null = null,
     page: number = 1,
     size: number = 10
   ) {
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('Keyword', keyword)
       .set('Page', page.toString())
       .set('Size', size.toString());
+    if (date) {
+      params = params.set('StartDate', date);
+      params = params.set('EndDate', date);
+    }
 
     return this.http.get<any>(`${this.apiUrl}/search`, { params });
   }

@@ -4,10 +4,11 @@ import { RouterModule } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { UserFormComponent } from '../../components/user-form/user-form.component';
 import { ModalWrapperComponent } from '../../../../shared/components/modal-wrapper/modal-wrapper.component';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { UserService, SearchParams } from '../../services/user.service';
 import { UserResponse } from '../../models/user.model';
-import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { AuthService } from '../../../../core/services/auth.service';
+import { ToastService } from '../../../../shared/services/toast.service'; // 1. Importar
 
 @Component({
   selector: 'app-user-admin',
@@ -25,11 +26,11 @@ import { AuthService } from '../../../../core/services/auth.service';
 export class UserAdminComponent implements OnInit {
   users: UserResponse[] = [];
   loading = false;
-
   isAdmin = false;
 
   showModal = false;
   selectedUser: UserResponse | null = null;
+
   showDeleteModal = false;
   userToDelete: UserResponse | null = null;
 
@@ -46,13 +47,36 @@ export class UserAdminComponent implements OnInit {
 
   constructor(
     private userService: UserService,
-    private authService: AuthService
+    private authService: AuthService,
+    private toast: ToastService
   ) {}
 
   ngOnInit(): void {
     this.isAdmin = this.authService.isAdmin();
-
     this.fetchUsers();
+  }
+
+  onResendEmail(user: UserResponse) {
+    if (
+      confirm(
+        `Deseja reenviar o e-mail de definição de senha para ${user.name}?`
+      )
+    ) {
+      this.loading = true;
+
+      this.userService.resendEmail(user.id).subscribe({
+        next: () => {
+          this.loading = false;
+          this.toast.success('E-mail reenviado com sucesso!');
+        },
+        error: (err: HttpErrorResponse) => {
+          this.loading = false;
+          console.error(err);
+          const msg = err.error?.message || err.message;
+          this.toast.error(`Erro ao enviar: ${msg}`);
+        },
+      });
+    }
   }
 
   fetchUsers(): void {
@@ -76,6 +100,7 @@ export class UserAdminComponent implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         console.error('Erro ao buscar usuários', err);
+        this.toast.error('Erro ao carregar lista de usuários.');
         this.loading = false;
       },
     });
@@ -124,13 +149,17 @@ export class UserAdminComponent implements OnInit {
     if (this.userToDelete) {
       this.userService.delete(this.userToDelete.id).subscribe({
         next: () => {
+          this.toast.success('Usuário excluído com sucesso.');
           this.fetchUsers();
           this.closeDeleteModal();
         },
         error: (err: HttpErrorResponse) => {
           console.error('Erro ao deletar', err);
+
           if (err.status === 403) {
-            alert('Você não tem permissão para excluir usuários.');
+            this.toast.warning('Você não tem permissão para excluir usuários.');
+          } else {
+            this.toast.error('Não foi possível excluir o usuário.');
           }
         },
       });

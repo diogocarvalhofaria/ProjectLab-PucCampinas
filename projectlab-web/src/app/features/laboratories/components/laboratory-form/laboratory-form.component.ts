@@ -17,6 +17,7 @@ import { LaboratoryResponse } from '../../models/laboratory.model';
 import { LaboratoryService } from '../../services/laboratory.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ToastService } from '../../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-laboratory-form',
@@ -31,10 +32,13 @@ export class LaboratoryFormComponent implements OnChanges {
   @Input() labData: LaboratoryResponse | null = null;
 
   form: FormGroup;
-  showSuccess = false;
   isSubmitting = false;
 
-  constructor(private fb: FormBuilder, private labService: LaboratoryService) {
+  constructor(
+    private fb: FormBuilder,
+    private labService: LaboratoryService,
+    private toast: ToastService
+  ) {
     this.form = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       building: ['', Validators.required],
@@ -44,7 +48,6 @@ export class LaboratoryFormComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.showSuccess = false;
     this.isSubmitting = false;
 
     if (this.labData) {
@@ -70,21 +73,24 @@ export class LaboratoryFormComponent implements OnChanges {
 
       request$.subscribe({
         next: () => {
-          this.showSuccess = true;
           this.isSubmitting = false;
 
-          setTimeout(() => {
-            this.saved.emit();
-          }, 1500);
+          const action = this.labData ? 'atualizado' : 'criado';
+          this.toast.success(`Laboratório ${action} com sucesso!`);
+
+          this.saved.emit();
         },
         error: (err: HttpErrorResponse) => {
           console.error('Erro:', err);
           this.isSubmitting = false;
-          alert('Erro ao salvar: ' + (err.error?.message || err.message));
+
+          const msg = err.error?.message || err.message || 'Erro desconhecido';
+          this.toast.error(`Erro ao salvar: ${msg}`);
         },
       });
     } else {
       this.form.markAllAsTouched();
+      this.toast.warning('Por favor, preencha todos os campos obrigatórios.');
     }
   }
 

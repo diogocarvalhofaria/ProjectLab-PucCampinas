@@ -11,6 +11,7 @@ import { LaboratoryFormComponent } from '../../components/laboratory-form/labora
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { ModalWrapperComponent } from '../../../../shared/components/modal-wrapper/modal-wrapper.component';
 import { AuthService } from '../../../../core/services/auth.service';
+import { ToastService } from '../../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-laboratory-admin',
@@ -45,12 +46,12 @@ export class LaboratoryAdminComponent implements OnInit {
 
   constructor(
     private laboratoryService: LaboratoryService,
-    private authService: AuthService
+    private authService: AuthService,
+    private toast: ToastService
   ) {}
 
   ngOnInit(): void {
     this.isAdmin = this.authService.isAdmin();
-
     this.fetchLaboratories();
   }
 
@@ -79,6 +80,7 @@ export class LaboratoryAdminComponent implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         console.error('Erro ao buscar laboratórios', err);
+        this.toast.error('Erro ao carregar a lista de laboratórios.');
         this.loading = false;
       },
     });
@@ -122,11 +124,24 @@ export class LaboratoryAdminComponent implements OnInit {
     if (this.idToDelete) {
       this.laboratoryService.delete(this.idToDelete).subscribe({
         next: () => {
+          this.toast.success('Laboratório excluído com sucesso!');
+
           this.fetchLaboratories();
           this.closeModal();
         },
-        error: (err: HttpErrorResponse) =>
-          console.error('Erro ao excluir', err),
+        error: (err: HttpErrorResponse) => {
+          console.error('Erro ao excluir', err);
+
+          if (err.status === 403) {
+            this.toast.warning(
+              'Você não tem permissão para excluir laboratórios.'
+            );
+          } else {
+            const msg =
+              err.error?.message || 'Não foi possível excluir o laboratório.';
+            this.toast.error(msg);
+          }
+        },
       });
     }
   }

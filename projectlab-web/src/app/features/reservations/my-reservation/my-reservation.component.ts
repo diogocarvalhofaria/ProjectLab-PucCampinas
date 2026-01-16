@@ -5,6 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ReservationResponse } from '../model/reservation.model';
 import { ReservationService } from '../service/reservation.service';
 import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-my-reservation',
@@ -20,7 +21,10 @@ export class MyReservationComponent implements OnInit {
   showCancelModal = false;
   selectedReservation: ReservationResponse | null = null;
 
-  constructor(private reservationService: ReservationService) {}
+  constructor(
+    private reservationService: ReservationService,
+    private toast: ToastService
+  ) {}
 
   ngOnInit(): void {
     this.fetchReservations();
@@ -36,6 +40,7 @@ export class MyReservationComponent implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         console.error('Erro ao buscar reservas:', err);
+        this.toast.error('Não foi possível carregar suas reservas.');
         this.reservations = [];
         this.loading = false;
       },
@@ -56,6 +61,8 @@ export class MyReservationComponent implements OnInit {
     if (this.selectedReservation) {
       this.reservationService.cancel(this.selectedReservation.id).subscribe({
         next: () => {
+          this.toast.success('Reserva cancelada com sucesso.');
+
           this.fetchReservations();
           this.closeCancelModal();
         },
@@ -68,9 +75,11 @@ export class MyReservationComponent implements OnInit {
             msg = 'Você não tem permissão para cancelar esta reserva.';
           } else if (err.error && typeof err.error === 'string') {
             msg = err.error;
+          } else if (err.error?.message) {
+            msg = err.error.message;
           }
 
-          alert(msg);
+          this.toast.error(msg);
           this.closeCancelModal();
         },
       });

@@ -10,6 +10,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { ReservationService } from '../service/reservation.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-reservation-form',
@@ -54,7 +55,8 @@ export class ReservationFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private reservationService: ReservationService,
-    private authService: AuthService
+    private authService: AuthService,
+    private toast: ToastService
   ) {
     this.form = this.fb.group({
       reservationDate: ['', Validators.required],
@@ -85,42 +87,39 @@ export class ReservationFormComponent implements OnInit {
       .getReservedTimes(this.laboratoryId, dateStr)
       .subscribe({
         next: (data) => {
-          console.log('Horários ocupados recebidos do backend:', data);
-
           this.occupiedSlots = data.map((slot: any) => ({
             startTime: this.formatTime(slot.startTime || slot.StartTime),
             endTime: this.formatTime(slot.endTime || slot.EndTime),
           }));
         },
-        error: (err) => console.error('Erro ao buscar horários ocupados', err),
+        error: (err) => {
+          console.error('Erro ao buscar horários ocupados', err);
+          this.toast.error('Não foi possível carregar a agenda.');
+        },
       });
   }
 
   formatTime(value: string): string {
     if (!value) return '';
-
     if (value.includes(':') && !value.includes('-') && !value.includes('/')) {
       return value.substring(0, 5);
     }
-
     const date = new Date(value);
-
     if (!isNaN(date.getTime())) {
       return date.toLocaleTimeString('pt-BR', {
         hour: '2-digit',
         minute: '2-digit',
       });
     }
-
     if (value.includes(' ')) {
       const parts = value.split(' ');
       if (parts.length > 1) {
         return parts[1].substring(0, 5);
       }
     }
-
     return value.substring(0, 5);
   }
+
   onSubmit() {
     if (this.form.valid) {
       const date = this.form.get('reservationDate')?.value;
@@ -128,7 +127,10 @@ export class ReservationFormComponent implements OnInit {
       const end = this.form.get('endTime')?.value;
 
       if (start >= end) {
-        alert('O horário de início deve ser menor que o horário de fim.');
+        // Alerta substituído por Toast Warning
+        this.toast.warning(
+          'O horário de início deve ser menor que o horário de fim.'
+        );
         return;
       }
 
@@ -140,9 +142,8 @@ export class ReservationFormComponent implements OnInit {
       );
 
       if (isConflict) {
-        alert(
-          'Atenção: Este horário já está reservado (verifique a lista acima).'
-        );
+        this.toast.error('Este horário já está reservado. Verifique a lista.');
+        return;
       }
 
       const dateObj = new Date(date);
@@ -153,6 +154,7 @@ export class ReservationFormComponent implements OnInit {
       this.showConfirmationModal = true;
     } else {
       this.form.markAllAsTouched();
+      this.toast.warning('Por favor, preencha todos os campos.');
     }
   }
 
@@ -163,7 +165,7 @@ export class ReservationFormComponent implements OnInit {
     const userId = this.authService.getUserIdFromToken();
 
     if (!userId) {
-      alert('Sessão inválida. Faça login novamente.');
+      this.toast.error('Sessão inválida. Faça login novamente.');
       this.loading = false;
       return;
     }
@@ -191,6 +193,8 @@ export class ReservationFormComponent implements OnInit {
     this.reservationService.create(reservationData).subscribe({
       next: () => {
         this.loading = false;
+        // Sucesso!
+        this.toast.success('Reserva realizada com sucesso!');
         this.saved.emit();
       },
       error: (err: HttpErrorResponse) => {
@@ -204,7 +208,8 @@ export class ReservationFormComponent implements OnInit {
         } else if (err.error?.message) {
           msg = err.error.message;
         }
-        alert(msg);
+
+        this.toast.error(msg);
       },
     });
   }

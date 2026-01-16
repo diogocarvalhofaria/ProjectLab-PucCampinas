@@ -12,6 +12,7 @@ namespace ProjectLab.PucCampinas.Features.Users.Service
         Task<UserResponse> CreateUser(UserRequest request, AuthService authService);
         Task UpdateUser(Guid id, UserRequest request);
         Task DeleteUser(Guid id);
+        Task ResendEmail(Guid id);
 
     }
 }

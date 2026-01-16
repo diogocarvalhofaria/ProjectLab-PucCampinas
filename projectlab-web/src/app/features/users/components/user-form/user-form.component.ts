@@ -17,6 +17,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { UserService } from '../../services/user.service';
 import { UserResponse } from '../../models/user.model';
+import { ToastService } from '../../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-user-form',
@@ -31,10 +32,13 @@ export class UserFormComponent implements OnChanges {
   @Input() userData: UserResponse | null = null;
 
   form: FormGroup;
-  showSuccess = false;
   isSubmitting = false;
 
-  constructor(private fb: FormBuilder, private userService: UserService) {
+  constructor(
+    private fb: FormBuilder,
+    private userService: UserService,
+    private toast: ToastService
+  ) {
     this.form = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       ra: ['', [Validators.required]],
@@ -51,7 +55,6 @@ export class UserFormComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.showSuccess = false;
     this.isSubmitting = false;
 
     if (this.userData) {
@@ -79,9 +82,14 @@ export class UserFormComponent implements OnChanges {
               cidade: dados.localidade,
               estado: dados.uf,
             });
+          } else {
+            this.toast.error('CEP não encontrado.');
           }
         },
-        error: (err) => console.error('Erro ao buscar CEP', err),
+        error: (err) => {
+          console.error('Erro ao buscar CEP', err);
+          this.toast.error('Erro ao consultar CEP.');
+        },
       });
     }
   }
@@ -89,7 +97,7 @@ export class UserFormComponent implements OnChanges {
   onSubmit() {
     if (this.form.valid) {
       this.isSubmitting = true;
-      const formData = this.form.value;
+      const formData = this.form.getRawValue();
 
       const request$: Observable<any> = this.userData
         ? this.userService.update(this.userData.id, formData)
@@ -97,21 +105,24 @@ export class UserFormComponent implements OnChanges {
 
       request$.subscribe({
         next: () => {
-          this.showSuccess = true;
           this.isSubmitting = false;
 
-          setTimeout(() => {
-            this.saved.emit();
-          }, 1500);
+          const action = this.userData ? 'atualizado' : 'criado';
+          this.toast.success(`Usuário ${action} com sucesso!`);
+
+          this.saved.emit();
         },
         error: (err: HttpErrorResponse) => {
           console.error('Erro:', err);
           this.isSubmitting = false;
-          alert('Erro ao salvar: ' + (err.error?.message || err.message));
+
+          const msg = err.error?.message || err.message || 'Erro desconhecido';
+          this.toast.error(`Erro ao salvar: ${msg}`);
         },
       });
     } else {
       this.form.markAllAsTouched();
+      this.toast.error('Por favor, preencha todos os campos obrigatórios.');
     }
   }
 

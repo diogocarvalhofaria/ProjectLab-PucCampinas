@@ -10,6 +10,7 @@ export interface UserResponse {
   bairro: string;
   cidade: string;
   estado: string;
+  isActive: boolean;
 }
 
 export interface UserRequest {

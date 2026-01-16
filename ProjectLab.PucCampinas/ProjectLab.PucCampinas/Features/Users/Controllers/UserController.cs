@@ -115,5 +115,32 @@ namespace ProjectLab.PucCampinas.Features.Users.Controllers
 
             return Ok(address);
         }
+
+        /// <summary>
+        /// Reenvia o e-mail de definição de senha para um usuário.
+        /// </summary>
+        /// <remarks>
+        /// Gera um novo token de configuração (válido por 24h) e envia o template de e-mail.
+        /// <br/>
+        /// <b>Regra de Negócio:</b> Este endpoint só processa a solicitação se o usuário estiver 
+        /// marcado como <b>Inativo</b> (ou seja, ainda não definiu sua senha inicial).
+        /// Se o usuário já estiver ativo, retornará um erro.
+        /// </remarks>
+        /// <param name="id">O identificador único (GUID) do usuário.</param>
+        /// <returns>Retorna status 204 (No Content) se o envio for iniciado com sucesso.</returns>
+        /// <response code="204">Sucesso. O e-mail foi reenviado.</response>
+        /// <response code="400">Erro de validação (ex: Usuário já está ativo/possui senha).</response>
+        /// <response code="404">Usuário não encontrado com o ID informado.</response>
+        /// <response code="500">Erro interno ao tentar enviar o e-mail.</response>
+        [HttpPost("{id}/resend-email")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> ResendEmail(Guid id)
+        {
+            await _service.ResendEmail(id);
+            return NoContent();
+        }
     }
 }

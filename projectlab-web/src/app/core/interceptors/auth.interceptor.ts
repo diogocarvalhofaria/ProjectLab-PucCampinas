@@ -2,9 +2,11 @@ import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
+import { ToastService } from '../../shared/services/toast.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
+  const toast = inject(ToastService);
 
   let token = localStorage.getItem('auth_token');
 
@@ -35,13 +37,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
-        console.warn(
-          '⚠️ Token expirado ou inválido (401). Realizando logout...'
-        );
+        console.warn('Token expirado ou inválido (401). Realizando logout...');
 
         localStorage.clear();
-
-        alert('Sua sessão expirou. Por favor, faça login novamente.');
+        toast.error('Sua sessão expirou. Por favor, faça login novamente.');
 
         router.navigate(['/login']);
       }

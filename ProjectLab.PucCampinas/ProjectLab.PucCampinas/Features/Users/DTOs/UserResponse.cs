@@ -13,5 +13,6 @@
         public string? Bairro { get; set; }
         public string? Cidade { get; set; }
         public string? Estado { get; set; }
+        public bool? IsActive { get; set; }
     }
 }

@@ -44,21 +44,12 @@
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
       </span>
+
       <input
         type="text"
-        placeholder="Buscar por nome ou e-mail..."
+        placeholder="Buscar por nome, e-mail, RA ou telefone..."
         (input)="onSearch($event)"
       />
-    </div>
-
-    <div class="filter-wrapper">
-      <span class="filter-label">Filtrar por Cargo:</span>
-      <select (change)="onFilterRole($event)">
-        <option value="">Todos os Cargos</option>
-        <option value="Admin">Administrador</option>
-        <option value="Professor">Professor</option>
-        <option value="Student">Aluno</option>
-      </select>
     </div>
   </div>
 
@@ -67,9 +58,19 @@
       <div class="card-header">
         <div class="user-info">
           <h3>{{ user.name }}</h3>
-          <span class="role-badge" [ngClass]="user.role.toLowerCase()">
-            {{ user.role }}
-          </span>
+
+          <div style="display: flex; gap: 8px; margin-top: 6px">
+            <span class="role-badge" [ngClass]="user.role.toLowerCase()">
+              {{ user.role }}
+            </span>
+
+            <span
+              class="status-badge"
+              [ngClass]="user.isActive ? 'status-active' : 'status-pending'"
+            >
+              {{ user.isActive ? "Ativo" : "Pendente" }}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -156,6 +157,32 @@
       </div>
 
       <div class="card-actions">
+        <button
+          *ngIf="!user.isActive"
+          class="btn-icon"
+          (click)="onResendEmail(user)"
+          title="Reenviar E-mail de Acesso"
+          style="color: #004a80"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
+            ></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+          Reenviar
+        </button>
+
         <button class="btn-icon edit" (click)="editUser(user)" title="Editar">
           <svg
             xmlns="http://www.w3.org/2000/svg"

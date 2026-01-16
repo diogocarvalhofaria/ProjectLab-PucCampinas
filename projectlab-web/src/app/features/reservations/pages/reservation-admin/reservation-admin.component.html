@@ -32,7 +32,12 @@
     </div>
 
     <div class="date-wrapper">
-      <input type="date" (change)="onDateChange($event)" class="date-input" />
+      <input
+        type="date"
+        (change)="onDateChange($event)"
+        class="date-input"
+        [ngModel]="selectedDate"
+      />
     </div>
   </div>
 
@@ -168,9 +173,9 @@
     *ngIf="showCancelModal"
     title="Cancelar Reserva"
     [message]="
-      'Tem certeza que deseja cancelar o agendamento de ' +
+      'Tem certeza que deseja cancelar o agendamento de <b>' +
       selectedReservation?.userName +
-      '?'
+      '</b>?'
     "
     confirmButtonText="Sim, Cancelar"
     (confirm)="confirmCancel()"

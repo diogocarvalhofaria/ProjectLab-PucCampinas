@@ -14,7 +14,8 @@ export class HomeComponent {
   user: UserPayload | null = null;
   now = new Date();
 
-  constructor(private authService: AuthService) {
+  constructor(private authService: AuthService) {}
+  ngOnInit(): void {
     this.user = this.authService.currentUserValue;
   }
 }
